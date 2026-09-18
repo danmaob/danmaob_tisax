@@ -10,9 +10,11 @@ public static class PermissionCatalogSeeder
         DanmaobTisaxDbContext context,
         CancellationToken cancellationToken)
     {
-        var existingPermissions = context.Permissions
-            .GroupBy(p => p.Module)
-            .ToDictionary(g => g.Key, g => g.Select(p => p.Action).First());
+        var existingCodes = new HashSet<string>(
+            await context.Permissions
+                .Select(p => p.Module + "." + p.Action)
+                .ToListAsync(cancellationToken),
+            StringComparer.OrdinalIgnoreCase);
 
         var permissionsToInsert = new List<Permission>
         {
@@ -25,12 +27,7 @@ public static class PermissionCatalogSeeder
 
         foreach (var permission in permissionsToInsert)
         {
-            if (!existingPermissions.TryGetValue(permission.Module, out var existingAction))
-            {
-                continue;
-            }
-
-            if (existingAction != null && string.Equals(existingAction, permission.Action, StringComparison.OrdinalIgnoreCase))
+            if (existingCodes.Contains(permission.Code))
             {
                 continue;
             }

@@ -47,14 +47,7 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
-            var response = new
-            {
-                AccessToken = result.AccessToken,
-                RefreshToken = result.RefreshToken,
-                ExpiresAtUtc = result.RefreshTokenExpiresAtUtc,
-                FailureReason = result.FailureReason
-            };
-            return Ok(response);
+            return Ok(result);
         }
 
         return Unauthorized(result.FailureReason);
@@ -73,14 +66,7 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
-            var response = new
-            {
-                AccessToken = result.AccessToken,
-                RefreshToken = result.RefreshToken,
-                ExpiresAtUtc = result.RefreshTokenExpiresAtUtc,
-                FailureReason = result.FailureReason
-            };
-            return Ok(response);
+            return Ok(result);
         }
 
         return Unauthorized(result.FailureReason);

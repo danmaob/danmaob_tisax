@@ -14,6 +14,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly IPasswordHasher _passwordHasher;
     private readonly PasswordPolicyOptions _passwordPolicyOptions;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly string _decoyPasswordHash;
 
     public AuthenticationService(
         DanmaobTisaxDbContext context,
@@ -25,6 +26,9 @@ public class AuthenticationService : IAuthenticationService
         _passwordHasher = passwordHasher;
         _passwordPolicyOptions = passwordPolicyOptions.Value;
         _jwtTokenService = jwtTokenService;
+        // Pre-computed with the real hasher so verifying against it takes the same
+        // code path (and roughly the same time) as verifying a real user's password.
+        _decoyPasswordHash = _passwordHasher.Hash("decoy-password-does-not-match-anything-Az9!");
     }
 
     public async Task<LoginResult> LoginAsync(
@@ -35,7 +39,8 @@ public class AuthenticationService : IAuthenticationService
         CancellationToken cancellationToken)
     {
         // Step 1: Find the User matching both TenantId and Email exactly.
-        var user = await _context.Users.FindAsync(tenantId, email, cancellationToken);
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == email, cancellationToken);
 
         // If not found: verify against a decoy hash to prevent timing attacks.
         if (user is null)
@@ -130,7 +135,8 @@ public class AuthenticationService : IAuthenticationService
         var tokenHash = _jwtTokenService.HashToken(rawRefreshToken);
 
         // Step 2: Find the matching RefreshToken by hash.
-        var refreshToken = await _context.RefreshTokens.FindAsync(tokenHash, cancellationToken);
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
 
         // If not found - InvalidRefreshToken.
         if (refreshToken is null)
@@ -145,7 +151,7 @@ public class AuthenticationService : IAuthenticationService
         // Step 4: If already revoked with non-null ReplacedByTokenHash - revoke all active tokens for that user.
         if (refreshToken.ReplacedByTokenHash is not null)
         {
-            var allRefreshTokens = await _context.RefreshTokens.ToListAsync();
+            var allRefreshTokens = await _context.RefreshTokens.ToListAsync(cancellationToken);
 
             foreach (var token in allRefreshTokens)
             {
@@ -175,7 +181,8 @@ public class AuthenticationService : IAuthenticationService
         }
 
         // Step 6: Load the corresponding User; if missing - InvalidRefreshToken.
-        var user = await _context.Users.FindAsync(refreshToken.UserId, cancellationToken);
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == refreshToken.UserId, cancellationToken);
         if (user is null)
         {
             return new LoginResult
@@ -218,7 +225,8 @@ public class AuthenticationService : IAuthenticationService
         var tokenHash = _jwtTokenService.HashToken(rawRefreshToken);
 
         // Find the matching RefreshToken.
-        var refreshToken = await _context.RefreshTokens.FindAsync(tokenHash, cancellationToken);
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
 
         // Call .Revoke() if found and save changes; do nothing if not found (idempotent).
         if (refreshToken is not null)
@@ -235,11 +243,11 @@ public class AuthenticationService : IAuthenticationService
         // Join UserRoles (filtered by UserId) with Roles for role names.
         var userRoleRelations = await _context.UserRoles
             .Where(ur => ur.UserId == userId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var roleIds = userRoleRelations.Select(ur => ur.RoleId).ToList();
 
-        if (!roleIds.Any())
+        if (roleIds.Count == 0)
         {
             return (Array.Empty<string>(), Array.Empty<string>());
         }
@@ -247,7 +255,7 @@ public class AuthenticationService : IAuthenticationService
         // Get roles by ids we collected.
         var rolesByIds = await _context.Roles
             .Where(r => roleIds.Contains(r.Id))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var roleNames = rolesByIds.Select(r => r.Name).ToList();
 
@@ -256,12 +264,12 @@ public class AuthenticationService : IAuthenticationService
             .Where(rp => roleIds.Contains(rp.RoleId))
             .Select(rp => rp.PermissionId)
             .Distinct()
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         // Get the actual permissions by ids.
         var permissionList = await _context.Permissions
             .Where(p => permissionIds.Contains(p.Id))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var permissionCodes = permissionList.Select(p => p.Code).ToList();
 
@@ -308,9 +316,8 @@ public class AuthenticationService : IAuthenticationService
 
     private void VerifyPasswordAgainstDecoy(string plainTextPassword)
     {
-        // Use a fixed example hash with a valid PasswordHasher<T> format for decoy verification.
-        // This ensures the two failure paths take comparable time and avoid revealing whether the user exists.
-        var decoyHash = "decoy_verification_hash_example_123456789";
-        var _ = _passwordHasher.Verify(decoyHash, plainTextPassword);
+        // Verifies against a real, well-formed hash so this path runs the same
+        // derivation work as a genuine lookup, avoiding a user-enumeration timing oracle.
+        _ = _passwordHasher.Verify(_decoyPasswordHash, plainTextPassword);
     }
 }

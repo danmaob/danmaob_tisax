@@ -4,16 +4,12 @@ using System.Text;
 
 namespace DanmaobTisax.Infrastructure.Identity;
 
-#nullable enable
-#pragma warning disable SYSLIB0060 // Rfc2898DeriveBytes constructor is obsolete but still functional
-
 public class PasswordHasherService : IPasswordHasher
 {
-    private const int MinCost = 10;
-    
-    public PasswordHasherService()
-    {
-    }
+    private const string AlgorithmTag = "pbkdf2-sha256";
+    private const int CurrentIterations = 210_000;
+    private const int DerivedKeyLength = 32;
+    private const int SaltLength = 16;
 
     public string Hash(string plainTextPassword)
     {
@@ -22,58 +18,60 @@ public class PasswordHasherService : IPasswordHasher
             throw new ArgumentNullException(nameof(plainTextPassword));
         }
 
-        // Generate a random salt
-        byte[] salt = new byte[16];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(salt);
+        var salt = RandomNumberGenerator.GetBytes(SaltLength);
+        var derivedBytes = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(plainTextPassword),
+            salt,
+            CurrentIterations,
+            HashAlgorithmName.SHA256,
+            DerivedKeyLength);
 
-        // Derive key with PBKDF2 using constructor (ignoring deprecation warning)
-        byte[] derivedBytes = new Rfc2898DeriveBytes(Encoding.UTF8.GetBytes(plainTextPassword), salt, MinCost).GetBytes(32);
-        
-        // Base64 encode for storage
-        string saltBase64 = Convert.ToBase64String(salt);
-        string hashBase64 = Convert.ToBase64String(derivedBytes);
-        
-        return $"2a${saltBase64}${hashBase64}";
+        var saltBase64 = Convert.ToBase64String(salt);
+        var hashBase64 = Convert.ToBase64String(derivedBytes);
+
+        return $"{AlgorithmTag}${CurrentIterations}${saltBase64}${hashBase64}";
     }
 
-    public DanmaobTisax.Application.Interfaces.PasswordVerificationResult Verify(string hash, string plainTextPassword)
+    public PasswordVerificationResult Verify(string hash, string plainTextPassword)
     {
         if (string.IsNullOrEmpty(hash) || string.IsNullOrEmpty(plainTextPassword))
         {
-            return DanmaobTisax.Application.Interfaces.PasswordVerificationResult.Failed;
+            return PasswordVerificationResult.Failed;
         }
 
-        // Parse the hash format: 2a$salt$hash
+        // Parse the hash format: pbkdf2-sha256$iterations$salt$hash
         var parts = hash.Split('$');
-        if (parts.Length < 3)
+        if (parts.Length != 4 || parts[0] != AlgorithmTag || !int.TryParse(parts[1], out var storedIterations))
         {
-            return DanmaobTisax.Application.Interfaces.PasswordVerificationResult.Failed;
+            return PasswordVerificationResult.Failed;
         }
 
         try
         {
-            string saltBase64 = parts[1];
-            string hashBase64 = parts[2];
+            var storedSalt = Convert.FromBase64String(parts[2]);
+            var storedHash = Convert.FromBase64String(parts[3]);
 
-            byte[] storedSalt = Convert.FromBase64String(saltBase64);
-            byte[] storedHash = Convert.FromBase64String(hashBase64);
+            var derivedBytes = Rfc2898DeriveBytes.Pbkdf2(
+                Encoding.UTF8.GetBytes(plainTextPassword),
+                storedSalt,
+                storedIterations,
+                HashAlgorithmName.SHA256,
+                storedHash.Length);
 
-            // Re-derive key from password and same salt
-            byte[] derivedBytes = new Rfc2898DeriveBytes(Encoding.UTF8.GetBytes(plainTextPassword), storedSalt, MinCost).GetBytes(storedHash.Length);
-
-            // Compare bytes safely to avoid timing attacks
-            if (CompareBytes(storedHash, derivedBytes))
+            if (!CompareBytes(storedHash, derivedBytes))
             {
-                return DanmaobTisax.Application.Interfaces.PasswordVerificationResult.Success;
+                return PasswordVerificationResult.Failed;
             }
-        }
-        catch (Exception)
-        {
-            // Invalid hash format or derivation failed
-        }
 
-        return DanmaobTisax.Application.Interfaces.PasswordVerificationResult.Failed;
+            return storedIterations < CurrentIterations
+                ? PasswordVerificationResult.SuccessRehashNeeded
+                : PasswordVerificationResult.Success;
+        }
+        catch (FormatException)
+        {
+            // Invalid hash format (bad base64).
+            return PasswordVerificationResult.Failed;
+        }
     }
 
     private static bool CompareBytes(byte[] a, byte[] b)
@@ -89,5 +87,4 @@ public class PasswordHasherService : IPasswordHasher
 
         return result == 0;
     }
-
 }

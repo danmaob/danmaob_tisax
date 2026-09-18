@@ -1,4 +1,5 @@
-using DanmaobTisax.Domain.Interfaces;
+using DanmaobTisax.Application.Interfaces;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
 namespace DanmaobTisax.Infrastructure.Identity;
@@ -9,25 +10,29 @@ namespace DanmaobTisax.Infrastructure.Identity;
 /// </summary>
 public class CurrentUserService : ICurrentUserService
 {
-    private readonly ClaimsPrincipal? _user;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    /// <summary>
-    /// Initializes a new instance with HTTP context accessor.
-    /// </summary>
-    public CurrentUserService(ClaimsPrincipal? user)
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
-        _user = user;
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
 
     /// <summary>
     /// Gets the current user's ID if authenticated, otherwise null.
     /// </summary>
-    public Guid? UserId => _user?.FindFirst(x => x.Type == "sub")?.Value != Guid.Empty.ToString()
-        ? new Guid(_user!.FindFirst(x => x.Type == "sub")!.Value)
-        : null;
+    public Guid? UserId
+    {
+        get
+        {
+            var subClaim = User?.FindFirst(x => x.Type == "sub")?.Value;
+            return Guid.TryParse(subClaim, out var userId) ? userId : null;
+        }
+    }
 
     /// <summary>
     /// Gets the current user's display name if authenticated.
     /// </summary>
-    public string? DisplayName => _user?.FindFirst(ClaimTypes.Name)?.Value;
+    public string? DisplayName => User?.FindFirst(ClaimTypes.Name)?.Value;
 }

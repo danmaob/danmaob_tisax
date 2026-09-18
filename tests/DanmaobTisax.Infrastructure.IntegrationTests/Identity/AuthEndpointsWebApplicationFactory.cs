@@ -20,17 +20,34 @@ public class AuthEndpointsWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("MultiTenancy:Mode", "SingleTenant");
         builder.UseSetting("MultiTenancy:FixedTenantId", TestTenantId.ToString());
 
+        // DbContextOptions<DanmaobTisaxDbContext> is scoped, so the UseInMemoryDatabase name
+        // must be fixed once here and reused on every ConfigureServices/options evaluation
+        // (which EF Core re-runs per scope) — otherwise each scope would get its own empty
+        // database instead of sharing one across the WebApplicationFactory instance.
+        var inMemoryDatabaseName = Guid.NewGuid().ToString();
+
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<DanmaobTisaxDbContext>));
-            if (descriptor is not null)
+            // AddInfrastructure registers DanmaobTisaxDbContext against SqlServer using the
+            // (IServiceProvider, DbContextOptionsBuilder) overload of AddDbContext. EF Core
+            // tracks that provider configuration in internal descriptors keyed by TContext
+            // (not just the DbContextOptions<TContext> registration), so simply re-calling
+            // AddDbContext with a different provider stacks both configurations instead of
+            // replacing them. Remove every descriptor generic over DanmaobTisaxDbContext plus
+            // the context registration itself before swapping in the InMemory provider.
+            var descriptorsToRemove = services
+                .Where(d => d.ServiceType == typeof(DanmaobTisaxDbContext) ||
+                            (d.ServiceType.IsGenericType &&
+                             d.ServiceType.GetGenericArguments().Contains(typeof(DanmaobTisaxDbContext))))
+                .ToList();
+
+            foreach (var descriptor in descriptorsToRemove)
             {
                 services.Remove(descriptor);
             }
 
             services.AddDbContext<DanmaobTisaxDbContext>(options =>
-                options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+                options.UseInMemoryDatabase(inMemoryDatabaseName));
         });
     }
 }

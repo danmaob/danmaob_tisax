@@ -25,9 +25,22 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
 
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Missing Jwt:Issuer");
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Missing Jwt:Audience");
-var jwtSigningKey = builder.Configuration["Jwt:SigningKey"] ?? throw new InvalidOperationException("Missing Jwt:SigningKey");
+RequiredConfigurationValidator.EnsurePresent(
+    builder.Configuration,
+    "Jwt:Issuer",
+    "Set it in configuration, e.g. via dotnet user-secrets set \"Jwt:Issuer\" \"<value>\".");
+RequiredConfigurationValidator.EnsurePresent(
+    builder.Configuration,
+    "Jwt:Audience",
+    "Set it in configuration, e.g. via dotnet user-secrets set \"Jwt:Audience\" \"<value>\".");
+RequiredConfigurationValidator.EnsurePresent(
+    builder.Configuration,
+    "Jwt:SigningKey",
+    "Set it in configuration, e.g. via dotnet user-secrets set \"Jwt:SigningKey\" \"<value>\".");
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
+var jwtAudience = builder.Configuration["Jwt:Audience"]!;
+var jwtSigningKey = builder.Configuration["Jwt:SigningKey"]!;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -61,9 +74,12 @@ if (args.Contains("--bootstrap-admin"))
     return;
 }
 
-await using var scopeContext = ActivatorUtilities.CreateInstance<DanmaobTisaxDbContext>(app.Services);
-await scopeContext.Database.EnsureCreatedAsync();
-await PermissionCatalogSeeder.SeedAsync(scopeContext, app.Services.GetRequiredService<CancellationToken>());
+using (var startupScope = app.Services.CreateScope())
+{
+    var scopeContext = startupScope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
+    await scopeContext.Database.EnsureCreatedAsync();
+    await PermissionCatalogSeeder.SeedAsync(scopeContext, CancellationToken.None);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
