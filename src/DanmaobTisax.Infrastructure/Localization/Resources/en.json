@@ -1,0 +1,8 @@
+{
+  "Common.WelcomeMessage": "Welcome to DANMAOB TISAX Compliance Manager.",
+  "Common.OK": "OK",
+  "Validation.Required": "The {0} field is required.",
+  "Validation.MaxLength": "The {0} field must not exceed {1} characters.",
+  "Errors.NotFound": "The requested resource does not exist.",
+  "Errors.Unauthorized": "You are not authorized to perform this action."
+}

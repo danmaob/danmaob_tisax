@@ -1,0 +1,9 @@
+{
+  "Common.WelcomeMessage": "Bienvenido a DANMAOB TISAX Compliance Manager.",
+  "Common.OK": "Aceptar",
+  "Validation.Required": "El campo {0} es obligatorio.",
+  "Validation.MaxLength": "El campo {0} no puede superar los {1} caracteres.",
+  "Errors.NotFound": "El recurso solicitado no existe.",
+  "Errors.Unauthorized": "No tiene autorización para realizar esta acción.",
+  "Errors.OnlyInDefaultCulture": "Este texto solo existe en español, para probar el mecanismo de fallback."
+}

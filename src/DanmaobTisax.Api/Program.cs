@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Asp.Versioning;
 using DanmaobTisax.Application;
 using DanmaobTisax.Domain.Identity;
 using DanmaobTisax.Infrastructure;
@@ -10,6 +11,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using DanmaobTisax.Infrastructure.Configuration;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Scalar.AspNetCore;
+using DanmaobTisax.Infrastructure.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +27,19 @@ RequiredConfigurationValidator.EnsurePresent(
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddLocalizationServices(builder.Configuration);
+
+var supportedCulturesOptions = SupportedCulturesOptions.FromConfiguration(builder.Configuration);
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(supportedCulturesOptions.DefaultCulture);
+    options.SupportedCultures = supportedCulturesOptions.SupportedCultureCodes
+        .Select(c => CultureInfo.GetCultureInfo(c))
+        .ToList();
+    options.SupportedUICultures = options.SupportedCultures;
+});
+
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
 
@@ -63,8 +81,21 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+builder.Services.AddProblemDetails();
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+})
+.AddOpenApi()
+.AddMvc();
 
 var app = builder.Build();
 
@@ -82,9 +113,19 @@ using (var startupScope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+app.UseRequestLocalization();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().WithDocumentPerVersion();
+
+    var versions = app.DescribeApiVersions();
+    app.MapScalarApiReference(v => {
+        for (int i = 0; i < versions.Count; i++)
+        {
+            v.AddDocument(versions[i].GroupName, $"{versions[i].ApiVersion}", isDefault: i == versions.Count - 1);
+        }
+    });
 }
 
 app.UseHttpsRedirection();
