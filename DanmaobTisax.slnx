@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DanmaobTisax.Api/DanmaobTisax.Api.csproj" />
+    <Project Path="src/DanmaobTisax.Application/DanmaobTisax.Application.csproj" />
+    <Project Path="src/DanmaobTisax.Domain/DanmaobTisax.Domain.csproj" />
+    <Project Path="src/DanmaobTisax.Infrastructure/DanmaobTisax.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DanmaobTisax.Infrastructure.IntegrationTests/DanmaobTisax.Infrastructure.IntegrationTests.csproj" />
+  </Folder>
+  <Project Path="tests/DanmaobTisax.ArchitectureTests/DanmaobTisax.ArchitectureTests.csproj" />
+</Solution>
