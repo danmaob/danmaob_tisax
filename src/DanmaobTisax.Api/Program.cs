@@ -94,8 +94,7 @@ builder.Services.AddApiVersioning(options =>
     options.GroupNameFormat = "'v'VVV";
     options.SubstituteApiVersionInUrl = true;
 })
-.AddOpenApi()
-.AddMvc();
+.AddOpenApi();
 
 var app = builder.Build();
 

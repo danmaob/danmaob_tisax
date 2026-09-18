@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Asp.Versioning;
 using DanmaobTisax.Application.Identity;
 using DanmaobTisax.Application.Interfaces;
 using DanmaobTisax.Domain.Identity;
@@ -42,7 +43,7 @@ public class AuthEndpointsTests : IClassFixture<AuthEndpointsWebApplicationFacto
         var email = $"{Guid.NewGuid()}@example.com";
         await SeedTestUserAsync(email, "Str0ng!Passw0rd");
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = "Str0ng!Passw0rd" });
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = "Str0ng!Passw0rd" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var result = await response.Content.ReadFromJsonAsync<LoginResult>();
@@ -58,7 +59,7 @@ public class AuthEndpointsTests : IClassFixture<AuthEndpointsWebApplicationFacto
         var email = $"{Guid.NewGuid()}@example.com";
         await SeedTestUserAsync(email, "Str0ng!Passw0rd");
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = "WrongPassword1!" });
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = "WrongPassword1!" });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -68,7 +69,7 @@ public class AuthEndpointsTests : IClassFixture<AuthEndpointsWebApplicationFacto
     {
         var email = $"{Guid.NewGuid()}@example.com";
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = "Whatever1!" });
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = "Whatever1!" });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -79,10 +80,10 @@ public class AuthEndpointsTests : IClassFixture<AuthEndpointsWebApplicationFacto
         var email = $"{Guid.NewGuid()}@example.com";
         await SeedTestUserAsync(email, "Str0ng!Passw0rd");
 
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = "Str0ng!Passw0rd" });
+        var loginResponse = await _client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = "Str0ng!Passw0rd" });
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResult>();
 
-        var refreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new { RefreshToken = loginResult!.RefreshToken });
+        var refreshResponse = await _client.PostAsJsonAsync("/api/v1/auth/refresh", new { RefreshToken = loginResult!.RefreshToken });
 
         Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
         var refreshResult = await refreshResponse.Content.ReadFromJsonAsync<LoginResult>();
@@ -98,13 +99,20 @@ public class AuthEndpointsTests : IClassFixture<AuthEndpointsWebApplicationFacto
         var email = $"{Guid.NewGuid()}@example.com";
         await SeedTestUserAsync(email, "Str0ng!Passw0rd");
 
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = "Str0ng!Passw0rd" });
+        var loginResponse = await _client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = "Str0ng!Passw0rd" });
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResult>();
 
-        var logoutResponse = await _client.PostAsJsonAsync("/api/auth/logout", new { RefreshToken = loginResult!.RefreshToken });
+        var logoutResponse = await _client.PostAsJsonAsync("/api/v1/auth/logout", new { RefreshToken = loginResult!.RefreshToken });
         Assert.Equal(HttpStatusCode.NoContent, logoutResponse.StatusCode);
 
-        var refreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new { RefreshToken = loginResult.RefreshToken });
+        var refreshResponse = await _client.PostAsJsonAsync("/api/v1/auth/refresh", new { RefreshToken = loginResult.RefreshToken });
         Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_WithUnversionedRoute_ReturnsNotFound()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new { Email = "irrelevant@example.com", Password = "Whatever1!" });
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

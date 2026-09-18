@@ -1,4 +1,5 @@
 using System;
+using Asp.Versioning;
 using DanmaobTisax.Api.Authorization;
 using DanmaobTisax.Application.Auditing;
 using DanmaobTisax.Application.Common;
@@ -7,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace DanmaobTisax.Api.Controllers;
 
 [ApiController]
-[Route("api/audit-logs")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/audit-logs")]
 [RequirePermission("Audit.Read")]
 public class AuditLogController : ControllerBase
 {
