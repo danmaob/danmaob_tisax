@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +24,7 @@ public class AuthController : ControllerBase
         _currentTenantProvider = currentTenantProvider;
     }
 
-    public record LoginRequest(string Email, string Password);
+    public record LoginRequest([Required, EmailAddress] string Email, [Required] string Password);
 
     public record RefreshRequest(string RefreshToken);
 

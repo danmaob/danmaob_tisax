@@ -115,4 +115,12 @@ public class AuthEndpointsTests : IClassFixture<AuthEndpointsWebApplicationFacto
         var response = await _client.PostAsJsonAsync("/api/auth/login", new { Email = "irrelevant@example.com", Password = "Whatever1!" });
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Login_WithMissingEmail_ReturnsBadRequest()
+    {
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", new { Password = "Whatever1!" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

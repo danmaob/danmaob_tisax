@@ -14,7 +14,9 @@ using DanmaobTisax.Infrastructure.Configuration;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Scalar.AspNetCore;
+using DanmaobTisax.Api.ErrorHandling;
 using DanmaobTisax.Infrastructure.Localization;
+using DanmaobTisax.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddFieldEncryption(builder.Configuration);
 
 RequiredConfigurationValidator.EnsurePresent(
     builder.Configuration,
@@ -83,6 +86,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddApiVersioning(options =>
 {
@@ -112,6 +116,8 @@ using (var startupScope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseRequestLocalization();
 
 if (app.Environment.IsDevelopment())
@@ -127,6 +133,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
