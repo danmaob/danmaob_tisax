@@ -4,5 +4,8 @@
   "Validation.Required": "The {0} field is required.",
   "Validation.MaxLength": "The {0} field must not exceed {1} characters.",
   "Errors.NotFound": "The requested resource does not exist.",
-  "Errors.Unauthorized": "You are not authorized to perform this action."
+  "Errors.Unauthorized": "You are not authorized to perform this action.",
+  "Errors.TenantNameInvalid": "The tenant name is not valid.",
+  "Errors.TenantNameAlreadyExists": "A tenant with this name already exists.",
+  "Errors.TenantInvalidStatusTransition": "The requested status change is not allowed for the current tenant status."
 }

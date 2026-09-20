@@ -5,5 +5,8 @@
   "Validation.MaxLength": "El campo {0} no puede superar los {1} caracteres.",
   "Errors.NotFound": "El recurso solicitado no existe.",
   "Errors.Unauthorized": "No tiene autorización para realizar esta acción.",
-  "Errors.OnlyInDefaultCulture": "Este texto solo existe en español, para probar el mecanismo de fallback."
+  "Errors.OnlyInDefaultCulture": "Este texto solo existe en español, para probar el mecanismo de fallback.",
+  "Errors.TenantNameInvalid": "El nombre del tenant no es válido.",
+  "Errors.TenantNameAlreadyExists": "Ya existe un tenant con este nombre.",
+  "Errors.TenantInvalidStatusTransition": "El cambio de estado solicitado no está permitido para el estado actual del tenant."
 }

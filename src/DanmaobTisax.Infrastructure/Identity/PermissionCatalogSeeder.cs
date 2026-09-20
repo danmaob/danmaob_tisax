@@ -22,7 +22,8 @@ public static class PermissionCatalogSeeder
             new Permission("Identity", "ManageUsers", "Create, update, deactivate users"),
             new Permission("Identity", "ManageRoles", "Create, update, delete roles"),
             new Permission("Identity", "AssignRoles", "Assign or remove roles from users"),
-            new Permission("Tenant", "ManageSettings", "Manage tenant-level configuration")
+            new Permission("Tenant", "ManageSettings", "Manage tenant-level configuration"),
+            new Permission("Platform", "ManageTenants", "Create, suspend, reactivate and deactivate tenants")
         };
 
         foreach (var permission in permissionsToInsert)
