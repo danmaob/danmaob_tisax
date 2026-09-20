@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using DanmaobTisax.Domain.Tenants;
+using DanmaobTisax.Domain.Identity;
 using DanmaobTisax.Application.Interfaces;
 using DanmaobTisax.Infrastructure.Auditing;
 using DanmaobTisax.Infrastructure.IntegrationTests.TestDoubles;
@@ -29,8 +29,8 @@ public class AuditInterceptorNonAuditableTests
         await context.Database.EnsureCreatedAsync();
 
         // Act
-        var tenant = new Tenant("NonAuditableTenant");
-        context.Tenants.Add(tenant);
+        var permission = new Permission("Test", "NonAuditable", null);
+        context.Permissions.Add(permission);
         await context.SaveChangesAsync();
 
         // Assert
