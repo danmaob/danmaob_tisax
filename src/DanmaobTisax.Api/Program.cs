@@ -15,6 +15,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Scalar.AspNetCore;
 using DanmaobTisax.Api.ErrorHandling;
+using DanmaobTisax.Api.Middleware;
 using DanmaobTisax.Infrastructure.Localization;
 using DanmaobTisax.Infrastructure.Security;
 
@@ -141,6 +142,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<TenantStatusMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

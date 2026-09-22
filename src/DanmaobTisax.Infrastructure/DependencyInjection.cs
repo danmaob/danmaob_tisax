@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
 
         services.AddScoped<IModuleAccessEvaluator, ModuleAccessEvaluator>();
+        services.AddScoped<ITenantStatusEvaluator, TenantStatusEvaluator>();
 
         services.AddScoped<ITenantAdministrationService, TenantAdministrationService>();
 
