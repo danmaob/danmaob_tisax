@@ -35,10 +35,13 @@ public static class DependencyInjection
 
         services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
 
+        services.AddScoped<IModuleAccessEvaluator, ModuleAccessEvaluator>();
+
         services.AddScoped<ITenantAdministrationService, TenantAdministrationService>();
 
         // Register authorization handler
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, ModuleAuthorizationHandler>();
 
         // Register authorization policy provider
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();

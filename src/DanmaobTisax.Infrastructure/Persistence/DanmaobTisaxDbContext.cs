@@ -29,6 +29,7 @@ public class DanmaobTisaxDbContext : DbContext
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<TenantModule> TenantModules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -169,6 +170,18 @@ public class DanmaobTisaxDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TenantModule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TenantId);
+            entity.Property(e => e.ModuleCode).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.IsEnabled);
+
+            entity.HasIndex(e => new { e.TenantId, e.ModuleCode })
+                .IsUnique()
+                .HasDatabaseName("IX_TenantModule_TenantId_ModuleCode");
         });
 
         OnModelCreatingCustom(modelBuilder);

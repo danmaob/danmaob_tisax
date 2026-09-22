@@ -1,4 +1,5 @@
 using DanmaobTisax.Application.Identity;
+using DanmaobTisax.Application.Tenants;
 using Microsoft.AspNetCore.Authorization;
 
 namespace DanmaobTisax.Infrastructure.Identity;
@@ -11,6 +12,14 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
     
     public async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
+        if (policyName.StartsWith("Module:"))
+        {
+            var moduleCode = policyName.Substring("Module:".Length);
+            return new AuthorizationPolicyBuilder()
+                .AddRequirements(new ModuleRequirement(moduleCode))
+                .Build();
+        }
+
         if (!policyName.StartsWith("Permission:"))
         {
             return null;
