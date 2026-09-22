@@ -16,7 +16,7 @@ public class ModuleAuthorizationHandler : AuthorizationHandler<ModuleRequirement
         AuthorizationHandlerContext context,
         ModuleRequirement requirement)
     {
-        if (!context.User.Identity?.IsAuthenticated is not true)
+        if (context.User.Identity?.IsAuthenticated is not true)
         {
             return;
         }
