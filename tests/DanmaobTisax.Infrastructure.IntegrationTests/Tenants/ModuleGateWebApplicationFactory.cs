@@ -16,9 +16,7 @@ public class ModuleGateWebApplicationFactory : AuthEndpointsWebApplicationFactor
 
         builder.ConfigureServices(services =>
         {
-            services.AddControllers();
-            var builder = services.AddApplicationPart(typeof(ModuleGateProbeController).Assembly);
-            _ = builder;
+            services.AddControllers().AddApplicationPart(typeof(ModuleGateProbeController).Assembly);
         });
     }
 
