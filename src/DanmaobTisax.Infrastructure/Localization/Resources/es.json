@@ -8,5 +8,6 @@
   "Errors.OnlyInDefaultCulture": "Este texto solo existe en español, para probar el mecanismo de fallback.",
   "Errors.TenantNameInvalid": "El nombre del tenant no es válido.",
   "Errors.TenantNameAlreadyExists": "Ya existe un tenant con este nombre.",
-  "Errors.TenantInvalidStatusTransition": "El cambio de estado solicitado no está permitido para el estado actual del tenant."
+  "Errors.TenantInvalidStatusTransition": "El cambio de estado solicitado no está permitido para el estado actual del tenant.",
+  "Errors.TenantNotActive": "El acceso no está permitido porque la organización no está activa."
 }

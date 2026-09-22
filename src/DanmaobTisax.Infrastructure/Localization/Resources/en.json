@@ -7,5 +7,6 @@
   "Errors.Unauthorized": "You are not authorized to perform this action.",
   "Errors.TenantNameInvalid": "The tenant name is not valid.",
   "Errors.TenantNameAlreadyExists": "A tenant with this name already exists.",
-  "Errors.TenantInvalidStatusTransition": "The requested status change is not allowed for the current tenant status."
+  "Errors.TenantInvalidStatusTransition": "The requested status change is not allowed for the current tenant status.",
+  "Errors.TenantNotActive": "Access is not allowed because the organization is not active."
 }
