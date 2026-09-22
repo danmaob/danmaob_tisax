@@ -1,9 +1,8 @@
-namespace DanmaobTisax.Infrastructure.IntegrationTests.Tenants;
-
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using DanmaobTisax.Application.Identity;
 using DanmaobTisax.Application.Interfaces;
+using DanmaobTisax.Application.Tenants;
 using DanmaobTisax.Domain.Identity;
 using DanmaobTisax.Infrastructure.Auditing;
 using DanmaobTisax.Infrastructure.IntegrationTests.Identity;
@@ -12,23 +11,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace DanmaobTisax.Infrastructure.IntegrationTests.Tenants;
+
 public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFactory
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
 
-        string? databaseName = Guid.NewGuid().ToString();
+        var databaseName = Guid.NewGuid().ToString();
 
         builder.ConfigureServices(services =>
         {
-            // AddInfrastructure registers DanmaobTisaxDbContext against SqlServer using the
-            // (IServiceProvider, DbContextOptionsBuilder) overload of AddDbContext. EF Core
-            // tracks that provider configuration in internal descriptors keyed by TContext
-            // (not just the DbContextOptions<TContext> registration), so simply re-calling
-            // AddDbContext with a different provider stacks both configurations instead of
-            // replacing them. Remove every descriptor generic over DanmaobTisaxDbContext plus
-            // the context registration itself before swapping in the InMemory provider.
             var descriptorsToRemove = services
                 .Where(d => d.ServiceType == typeof(DanmaobTisaxDbContext) ||
                             (d.ServiceType.IsGenericType &&
@@ -40,11 +34,8 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
                 services.Remove(descriptor);
             }
 
-            // Re-register with InMemoryDatabase and interceptor, resolving the interceptor
-            // from the provider instead of creating it inline.
             services.AddDbContext<DanmaobTisaxDbContext>((serviceProvider, options) =>
             {
-                var context = serviceProvider.GetRequiredService<DanmaobTisaxDbContext>();
                 options.UseInMemoryDatabase(databaseName);
                 options.AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>());
             });
@@ -57,15 +48,12 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-        string email = Guid.NewGuid() + "@example.com";
-        string password = "Str0ng!Passw0rd";
-        string hashedPassword = passwordHasher.Hash(password);
+        var email = Guid.NewGuid() + "@example.com";
+        const string password = "Str0ng!Passw0rd";
 
-        User user = new(TestTenantId, email, hashedPassword, "Platform Test User");
-        
-        Role role = new(TestTenantId, "PlatformTestRole-" + Guid.NewGuid().ToString(), null, false);
-
-        UserRole userRole = new(user.Id, role.Id);
+        var user = new User(TestTenantId, email, passwordHasher.Hash(password), "Platform Test User");
+        var role = new Role(TestTenantId, "PlatformTestRole-" + Guid.NewGuid(), null, false);
+        var userRole = new UserRole(user.Id, role.Id);
 
         context.Users.Add(user);
         context.Roles.Add(role);
@@ -79,24 +67,36 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
 
         await context.SaveChangesAsync();
 
-        using HttpClient client = CreateClient();
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = password });
+        using var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = password });
         response.EnsureSuccessStatusCode();
 
-        var loginResult = await response.Content.ReadFromJsonAsync<LoginResult>();
-        
-        if (loginResult == null || string.IsNullOrWhiteSpace(loginResult.AccessToken))
+        var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+        if (result is null || string.IsNullOrWhiteSpace(result.AccessToken))
         {
             throw new InvalidOperationException("Login did not return an access token.");
         }
 
-        return (user.Id, loginResult.AccessToken);
+        return (user.Id, result.AccessToken);
     }
 
     public HttpClient CreateClientWithToken(string accessToken)
     {
-        using var client = CreateClient();
+        var client = CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         return client;
+    }
+
+    public async Task<TenantDto> CreateTenantAsync(HttpClient client, string? name = null)
+    {
+        var tenantName = name ?? "Tenant-" + Guid.NewGuid();
+
+        var response = await client.PostAsJsonAsync("/api/v1/platform/tenants", new { Name = tenantName });
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+
+        var tenant = await response.Content.ReadFromJsonAsync<TenantDto>();
+        Assert.NotNull(tenant);
+
+        return tenant;
     }
 }
