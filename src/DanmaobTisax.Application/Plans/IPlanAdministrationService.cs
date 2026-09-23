@@ -43,4 +43,29 @@ public interface IPlanAdministrationService
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task that resolves to the operation result.</returns>
     Task<PlanOperationResult> RenameAsync(Guid planId, string name, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deactivates a plan. Outcomes: Succeeded, NotFound, DefaultPlanCannotBeDeactivated, InvalidStateTransition, PlanInUse.
+    /// </summary>
+    /// <param name="planId">The identifier of the plan to deactivate.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that resolves to the operation result.</returns>
+    Task<PlanOperationResult> DeactivateAsync(Guid planId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Reactivates an inactive plan. Outcomes: Succeeded, NotFound, InvalidStateTransition.
+    /// </summary>
+    /// <param name="planId">The identifier of the plan to reactivate.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that resolves to the operation result.</returns>
+    Task<PlanOperationResult> ReactivateAsync(Guid planId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Replaces the set of enabled modules of a plan. Rows are enabled or disabled, never deleted. Outcomes: Succeeded, NotFound, UnknownModuleCode.
+    /// </summary>
+    /// <param name="planId">The identifier of the plan to update.</param>
+    /// <param name="moduleCodes">The list of module codes to enable on this plan.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that resolves to the operation result.</returns>
+    Task<PlanOperationResult> SetModulesAsync(Guid planId, IReadOnlyList<string> moduleCodes, CancellationToken cancellationToken);
 }
