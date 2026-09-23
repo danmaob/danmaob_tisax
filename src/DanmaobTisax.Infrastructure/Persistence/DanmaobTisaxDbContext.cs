@@ -45,6 +45,8 @@ public class DanmaobTisaxDbContext : DbContext
             entity.HasKey(t => t.Id);
             entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
             entity.Property(t => t.Status).IsRequired().HasConversion<string>().HasMaxLength(20).HasDefaultValue(TenantStatus.Active);
+            entity.Property(t => t.PlanId).IsRequired().HasDefaultValue(PlanCatalog.FreePlanId);
+            entity.HasOne<Plan>().WithMany().HasForeignKey(t => t.PlanId).OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(t => t.Name)
                 .IsUnique()
                 .HasDatabaseName("IX_Tenant_Name");
