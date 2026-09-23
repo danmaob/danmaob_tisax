@@ -1,11 +1,13 @@
 using DanmaobTisax.Application.Auditing;
 using DanmaobTisax.Application.Identity;
 using DanmaobTisax.Application.Interfaces;
+using DanmaobTisax.Application.Plans;
 using DanmaobTisax.Application.Tenants;
 using DanmaobTisax.Infrastructure.Auditing;
 using DanmaobTisax.Infrastructure.Identity;
 using DanmaobTisax.Infrastructure.MultiTenancy;
 using DanmaobTisax.Infrastructure.Persistence;
+using DanmaobTisax.Infrastructure.Plans;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantStatusEvaluator, TenantStatusEvaluator>();
 
         services.AddScoped<ITenantAdministrationService, TenantAdministrationService>();
+        services.AddScoped<IPlanAdministrationService, PlanAdministrationService>();
 
         // Register authorization handler
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
