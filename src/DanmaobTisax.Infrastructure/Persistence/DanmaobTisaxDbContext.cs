@@ -5,6 +5,7 @@ using DanmaobTisax.Domain.Common;
 using DanmaobTisax.Domain.Identity;
 using DanmaobTisax.Domain.Plans;
 using DanmaobTisax.Domain.Tenants;
+using DanmaobTisax.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 
 namespace DanmaobTisax.Infrastructure.Persistence;
@@ -225,6 +226,8 @@ public class DanmaobTisaxDbContext : DbContext
                 .HasPrincipalKey(m => m.Code)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        PlanCatalogSeedData.Apply(modelBuilder);
 
         OnModelCreatingCustom(modelBuilder);
 
