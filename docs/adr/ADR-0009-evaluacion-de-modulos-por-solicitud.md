@@ -1,6 +1,6 @@
 # ADR-0009 — Evaluación de módulos habilitados en cada solicitud
 
-**Estado:** Aceptada, con un supuesto pendiente de confirmar por Luis (D2)
+**Estado:** Aceptada. La decisión D2 fue sustituida por ADR-0013 (Sprint 5)
 **Fecha:** 2026-09-19
 **Historia relacionada:** US-20-2 — Aislamiento entre tenants y evaluación en tiempo real de módulos habilitados (Sprint 4)
 **Requisitos relacionados:** RF-D20-10, RF-D20-22, RF-D20-23, RNF-MT-02
@@ -16,6 +16,8 @@ Los criterios de aceptación de US-20-2 exigen que la API bloquee el acceso a un
 La evaluación usa el claim `tenant` del JWT (firmado por el servidor; el cliente no puede elegirlo), no `ICurrentTenantProvider`, para no depender de cómo se resuelva el tenant en cada modo de despliegue. Nunca se confía en un header ni en datos no autenticados.
 
 ### D2 — SUPUESTO por confirmar: una fila `TenantModule` es la decisión de acceso explícita
+
+> **Sustituida por ADR-0013 (2026-09-23).** Una fila `TenantModule` sigue decidiendo sola cuando existe, pero ahora es una excepción: sin fila decide el plan del tenant. Además, la migración de `TenantModules` que esta sección daba por hecha nunca se generó; se corrige en Sprint 5.
 
 Se agrega la entidad `TenantModule` (`TenantId`, `ModuleCode`, `IsEnabled`). **Sin fila, el acceso se deniega.** Es `ITenantOwned` (el filtro global la protege por defecto; el evaluador usa `IgnoreQueryFilters()` con un predicado explícito por tenant), es `IAuditable` y no tiene clave foránea a `Tenants` porque el tenant de una instalación `SingleTenant` no tiene fila allí. Los códigos de módulo son texto libre con la misma grafía; el catálogo real llega con US-20-3. Es el mínimo necesario para poder verificar los dos criterios; US-20-3, US-20-4 y US-20-5 deberán conciliar cómo se combinan plan y excepciones con esta tabla. **Si Luis define otra fuente de datos para "habilitado", cambian los prompts 01 a 03 y 05.**
 
