@@ -3,6 +3,7 @@ using DanmaobTisax.Application.Interfaces;
 using DanmaobTisax.Domain.Auditing;
 using DanmaobTisax.Domain.Common;
 using DanmaobTisax.Domain.Identity;
+using DanmaobTisax.Domain.Plans;
 using DanmaobTisax.Domain.Tenants;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,9 @@ public class DanmaobTisaxDbContext : DbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<TenantModule> TenantModules { get; set; }
+    public DbSet<FunctionalModule> FunctionalModules { get; set; }
+    public DbSet<Plan> Plans { get; set; }
+    public DbSet<PlanModule> PlanModules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -182,6 +186,44 @@ public class DanmaobTisaxDbContext : DbContext
             entity.HasIndex(e => new { e.TenantId, e.ModuleCode })
                 .IsUnique()
                 .HasDatabaseName("IX_TenantModule_TenantId_ModuleCode");
+        });
+
+        modelBuilder.Entity<FunctionalModule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.SortOrder);
+        });
+
+        modelBuilder.Entity<Plan>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.IsActive);
+            entity.HasIndex(e => e.Code)
+                .IsUnique()
+                .HasDatabaseName("IX_Plan_Code");
+        });
+
+        modelBuilder.Entity<PlanModule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PlanId);
+            entity.Property(e => e.ModuleCode).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.IsEnabled);
+            entity.HasIndex(e => new { e.PlanId, e.ModuleCode })
+                .IsUnique()
+                .HasDatabaseName("IX_PlanModule_PlanId_ModuleCode");
+            entity.HasOne<Plan>()
+                .WithMany()
+                .HasForeignKey(pmp => pmp.PlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<FunctionalModule>()
+                .WithMany()
+                .HasForeignKey(e => e.ModuleCode)
+                .HasPrincipalKey(m => m.Code)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         OnModelCreatingCustom(modelBuilder);
