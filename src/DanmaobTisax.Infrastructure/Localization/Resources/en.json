@@ -8,5 +8,12 @@
   "Errors.TenantNameInvalid": "The tenant name is not valid.",
   "Errors.TenantNameAlreadyExists": "A tenant with this name already exists.",
   "Errors.TenantInvalidStatusTransition": "The requested status change is not allowed for the current tenant status.",
-  "Errors.TenantNotActive": "Access is not allowed because the organization is not active."
+  "Errors.TenantNotActive": "Access is not allowed because the organization is not active.",
+  "Errors.PlanInvalidCode": "The plan code is not valid.",
+  "Errors.PlanInvalidName": "The plan name is not valid.",
+  "Errors.PlanCodeAlreadyExists": "A plan with this code already exists.",
+  "Errors.PlanUnknownModuleCode": "One or more module codes do not exist in the module catalog.",
+  "Errors.PlanInUse": "The plan cannot be deactivated because it is assigned to active tenants.",
+  "Errors.PlanDefaultCannotBeDeactivated": "The default plan cannot be deactivated.",
+  "Errors.PlanInvalidStateTransition": "The requested status change is not allowed for the current plan status."
 }

@@ -9,5 +9,12 @@
   "Errors.TenantNameInvalid": "El nombre del tenant no es válido.",
   "Errors.TenantNameAlreadyExists": "Ya existe un tenant con este nombre.",
   "Errors.TenantInvalidStatusTransition": "El cambio de estado solicitado no está permitido para el estado actual del tenant.",
-  "Errors.TenantNotActive": "El acceso no está permitido porque la organización no está activa."
+  "Errors.TenantNotActive": "El acceso no está permitido porque la organización no está activa.",
+  "Errors.PlanInvalidCode": "El código del plan no es válido.",
+  "Errors.PlanInvalidName": "El nombre del plan no es válido.",
+  "Errors.PlanCodeAlreadyExists": "Ya existe un plan con este código.",
+  "Errors.PlanUnknownModuleCode": "Uno o más códigos de módulo no existen en el catálogo de módulos.",
+  "Errors.PlanInUse": "El plan no se puede desactivar porque está asignado a tenants activos.",
+  "Errors.PlanDefaultCannotBeDeactivated": "El plan predeterminado no se puede desactivar.",
+  "Errors.PlanInvalidStateTransition": "El cambio de estado solicitado no está permitido para el estado actual del plan."
 }
