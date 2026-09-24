@@ -1,60 +1,17 @@
-# DANMAOB TISAX Compliance Manager — Contexto acumulado hasta el cierre de Sprint 2
+# DANMAOB TISAX Compliance Manager — Reglas permanentes para Claude y el ejecutor local
 
-Este documento resume todo lo aprendido y acordado durante Sprint 1 y Sprint 2, para arrancar Sprint 3 sin perder continuidad.
+Este archivo contiene SOLO lo permanente del proyecto: el bloque de restricción que va en cada prompt, las convenciones verificadas del repositorio y las reglas fijas para escribir prompts. El estado de cada sprint (historias, conteo de pruebas, migraciones, pendientes) NO va aquí: vive en el documento de arranque de cada sprint, que Luis entrega al inicio de cada sesión de Claude.
 
----
+Última revisión: cierre de Sprint 5 (2026-09-24).
 
-## 1. El proyecto
+## 1. Proyecto y roles
 
-- DANMAOB TISAX Compliance Manager: plataforma B2B empresarial para que proveedores automotrices (principalmente Tier 1/Tier 2, enfoque LatAm/México) implementen y mantengan su cumplimiento TISAX, usando el catálogo VDA ISA como referencia normativa.
-- Tres modelos de despliegue objetivo: On-Premise, Private Cloud, SaaS. Tres niveles de plan comercial, como eje ortogonal a los modelos de despliegue.
-- Luis es el líder técnico, product owner, y autoridad final sobre todas las decisiones.
+- Producto: plataforma B2B para que proveedores automotrices implementen y mantengan su cumplimiento TISAX (catálogo VDA ISA como referencia).
+- Luis: Product Owner y autoridad final. Ejecuta él mismo build, test, git, migraciones y SQL. No escribe código.
+- Claude: Engineering Orchestrator. Diseña contratos en prosa, divide el trabajo en prompts atómicos y verifica contra el código real.
+- Ejecutor local ("DEV JR"): extensión Ollama Code de VS Code con el agente OpenCode sobre `qwen3.5:9b` (razonamiento "high"). Codifica las instrucciones de Claude; no es mecanógrafo. No es confiable sin verificación.
 
-## 2. Stack técnico
-
-- .NET 10.0 (`net10.0`, `LangVersion latest`), ASP.NET Core Web API con controllers (no minimal API).
-- EF Core 10 con SQL Server (Docker en macOS).
-- Clean Architecture: Domain / Application / Infrastructure / Api.
-- Pruebas: xUnit y NetArchTest.Rules.
-- Sin CQRS/MediatR — descartado por licenciamiento y complejidad injustificada.
-- Solución: `DanmaobTisax.slnx` dentro de `Net/`. Carpetas hermanas: `Docs/`, `MAUI/`, `prompts/`.
-- Raíz del workspace: `/Users/luisortiz/Desarrollo/DANMAOB/DANMAOB_TISAX/`
-
-## 3. Modelo de equipo y flujo de sprints
-
-- Gestión del proyecto en Jira; Luis traslada manualmente los resultados de Claude a Jira.
-- Cada sesión de Claude equivale a un sprint.
-- Si el ejecutor local se desvía a media tarea, Luis regresa a la MISMA sesión donde se generó ese prompt — nunca abre una nueva para corregir.
-- El siguiente sprint arranca en una sesión completamente nueva, con este documento como carga inicial.
-- Cada subtarea de Jira se traduce en uno o más prompts atómicos para el ejecutor local, cada uno corrido en una sesión `/newtask` limpia salvo que se esté probando deliberadamente correr varias subtareas relacionadas en una sola sesión (ver sección 6).
-
-## 4. Roles
-
-- **Claude**: arquitecto técnico, autor de especificaciones, ADRs, READMEs, y orquestador de ingeniería. Nunca escribe código C# literal en los prompts — solo el contrato exacto.
-- **Ejecutor local (Cline u Ollama Code, corriendo un modelo vía Ollama)**: el "typeador" — traduce las especificaciones de Claude a C# real. Ver sección 7 para hallazgos de confiabilidad.
-- **Luis**: autoridad final, corre y verifica todos los comandos de terminal él mismo, maneja credenciales reales y operaciones de base de datos reales.
-- La documentación (ADRs, READMEs) la escribe exclusivamente Claude, nunca se delega al ejecutor local.
-
-## 5. Estado actual (al cierre de esta sesión, 2026-09-17)
-
-- **Sprint 1** (TS-00-1, TS-00-2, TS-00-9): completo y verificado.
-- **Sprint 2**:
-  - **TS-00-4** (framework de auditoría transversal): **completo y verificado**. 20/20 pruebas pasando (9 de Sprint 1 + 11 de TS-00-4), los 11 nombres de método `[Fact]` coinciden exactamente con la especificación de cada prompt, sin modificaciones no autorizadas en `src/`.
-  - **TS-00-3** (RBAC/autenticación): **en progreso**, actualmente en la subtarea 12 (servicio de tokens JWT) de 24. Subtareas 1-11 completas y verificadas (entidades de dominio, configuración EF, migración aplicada).
-- Antes de escribir prompts de un nuevo sprint, pedirle a Luis que corra `ls Net/docs/adr/` para confirmar la numeración real de ADRs — la memoria de Claude sobre qué números ya se usaron puede estar desactualizada.
-
-## 6. Metodología de escritura de prompts (reglas no negociables)
-
-1. **Cero bloques de código C# literal** en ningún prompt, ni siquiera para cosas triviales (enums, DTOs). Claude especifica solo el CONTRATO: nombres exactos de tipo/clase/interfaz/namespace, tablas de propiedades (nombre / tipo / nullable / valor por defecto), firmas de método en prosa, y comportamiento paso a paso en prosa.
-2. **Todos los prompts en inglés**, sin excepción, aunque la comunicación con Luis sea en español.
-3. **Un prompt por subtarea de Jira**, salvo que la complejidad real amerite dividirla más (ver la subtarea 4 y las de pruebas de TS-00-4 como ejemplo de cuándo sí conviene atomizar más).
-4. **Rutas absolutas exactas** de archivo en cada prompt — nunca rutas relativas, nunca dejar que el ejecutor "busque" un archivo.
-5. **El bloque de restricción obligatoria** (texto completo abajo) va al inicio de cada prompt.
-6. Verificar SIEMPRE con `grep` antes de entregar cualquier ZIP: cero bloques de código, cero residuos en español.
-7. Los archivos para Luis (`README.md`, `ADR-*.md`, `00-Tabla-Subtareas.md`) van en español — no confundir audiencias.
-8. En prompts de configuración EF: **cada propiedad de cada entidad debe tener su propia llamada explícita a `.Property(e => e.X)`**, incluso las que no necesitan ninguna restricción — ver el bug real documentado en la sección 8.
-
-### Bloque de restricción obligatoria (versión actual, la más reciente)
+## 2. Bloque de restricción obligatoria (va literal al inicio de cada prompt)
 
 ```
 ## MANDATORY FILESYSTEM AND SCOPE RESTRICTION — READ FIRST, NO EXCEPTIONS
@@ -138,43 +95,55 @@ produce happens to be correct.
 ---
 ```
 
-**Nota:** si algún prompt futuro toca `DanmaobTisaxDbContext.cs`, agregar además una línea explícita indicando su ruta absoluta completa y aclarando qué partes SÍ y NO se deben tocar — ese archivo específico ha demostrado ser el más propenso a que el modelo local lo "mejore" sin que se le pida (ver sección 8).
+**Nota:** si un prompt toca `DanmaobTisaxDbContext.cs`, agregar además una línea explícita con su ruta absoluta y qué partes SÍ y NO se pueden tocar. `ApplyTenantQueryFilters(modelBuilder);` debe seguir siendo la última instrucción de `OnModelCreating`.
 
-## 7. Hallazgos de confiabilidad del ejecutor local
+## 3. Reglas fijas para escribir prompts
 
-- **Nunca confiar en el autorreporte** de build, pruebas, o estado de archivos — ni cuando suena alarmante ni cuando suena perfecto. Verificación real: Luis corre `dotnet build`/`dotnet test`/`cat`/`find` él mismo y pega el resultado literal. Un caso documentado: un resumen final decía "16 pruebas, corrección sospechosa de un constructor" — la realidad en disco eran 20 pruebas correctas y nada sospechoso tocado. Otro caso: un resumen decía "build exitoso" con formato `net6.0`, en inglés, con proyectos faltantes — resultó ser completamente fabricado, sin ejecución real detrás.
-- **El modelo sustituye especificaciones explícitas por patrones memorizados de su entrenamiento** cuando el patrón es muy reconocible (ejemplo: reconstruyó un `SaveChangesInterceptor` con MediatR/`IPublisher` sin que se pidiera, un patrón común en templates de Clean Architecture .NET). Está más correlacionado con el tamaño del modelo que con la redacción del prompt.
-- **`DanmaobTisaxDbContext.cs` es el archivo más frágil del proyecto**: en dos ocasiones distintas, sesiones que NO tenían ninguna tarea relacionada con ese archivo lo modificaron de todas formas, rompiendo el filtro de aislamiento por tenant de formas silenciosas (compila limpio, no rompe pruebas existentes, pero deja de filtrar por tenant). Vigilar este archivo específicamente en cualquier prompt futuro que pase cerca de él.
-- **`qwen2.5-coder:7b` queda descartado** para tareas agénticas — confirmado en dos integraciones distintas (Cline y la extensión "Ollama Code") que no invoca herramientas reales, solo genera texto con forma de llamada a herramienta. No vale la pena seguir probándolo salvo que se encuentre una variante explícitamente compatible con tool-calling.
-- **Sin rutas exactas de archivo, el modelo se pone a explorar todo el repo sin control** — confirmado con casi 2 horas de exploración descontrolada, dos compactaciones de contexto, y modificación no autorizada de un archivo de producción ya verificado. Conclusión definitiva: rutas exactas siempre, sin excepción.
-- Un bug real de EF Core (no del modelo): propiedades `string?` de solo lectura, sin setter, nunca referenciadas en la configuración Fluent, se caen silenciosamente de la migración generada aunque el build compile limpio. Regla: configurar cada propiedad explícitamente, sin excepción.
-- Un bug de concurrencia real (no del modelo): volver a consultar `ChangeTracker.Entries()` en bucles separados después de que un bucle previo ya mutó el tracker agregando nuevas filas causa "Collection was modified". Se corrigió recolectando en una lista y agregando todo junto al final, y consolidando la lógica compartida entre `SavingChanges`/`SavingChangesAsync` en un único método privado para que no puedan desincronizarse entre sí.
-- Regla de proceso: cuando una pieza de código tiene comportamiento en tiempo de ejecución no trivial (interceptores de EF Core, lógica de `ChangeTracker`), no basta con exigir que compile — hay que exigir una prueba de ejecución real lo antes posible, no solo al final de la subtarea de pruebas.
+1. Todos los prompts en inglés. Los documentos para Luis (README, ADRs, tablas de subtareas) en español.
+2. Sin C# de diseño nuevo: Claude especifica el contrato (nombres exactos, tablas de propiedades, firmas, comportamiento en pasos numerados). Excepciones permitidas:
+   - consultas LINQ/EF y toda llamada encadenada `.X().Y()`, que van como línea literal (en prosa producen errores);
+   - código existente del repositorio, citado verbatim (nunca "copia el cuerpo de tal método": el ejecutor modifica el original);
+   - prompts de corrección quirúrgica de un defecto confirmado, que pueden llevar el bloque exacto a reemplazar.
+3. Prosa estricta en pasos numerados: una acción por paso, con el nombre exacto de la variable resultante. Sin verbos ambiguos ("crea un plan"): nombrar el método y sus argumentos exactos.
+4. Rutas absolutas exactas de cada archivo; nunca dejar que el ejecutor "busque".
+5. Archivos `partial`: los `using` son por archivo. Cada archivo partial nuevo lleva un paso de encabezado obligatorio (usings exactos, namespace exacto, declaración `public partial class X` sin base) y un `grep` que lo verifique. Una segunda parte sin namespace compila como otra clase.
+6. Códigos de error (`errorCode`) siempre como texto entre comillas y comparados con `Assert.Equal`.
+7. Condiciones booleanas escritas exactas (`== true`, `== false`, `is null`). Nunca dobles negaciones.
+8. En pruebas HTTP: `response.Content.ReadFromJsonAsync<T>()`, nunca `JsonSerializer.Deserialize`. Solo aserciones de xUnit, sin FluentAssertions.
+9. Clases grandes (servicios, controllers, pruebas) se dividen en archivos `partial`: el primer prompt declara la base; los siguientes solo agregan métodos.
+10. En configuración EF, cada propiedad de cada entidad lleva su propia llamada `.Property(e => e.X)`, aunque no tenga restricciones (una propiedad no configurada se cayó de una migración).
+11. Verificación de cada prompt: salida literal de `dotnet build`/`dotnet test`, comprobaciones con `grep` y `git status --short --untracked-files=all` con la lista exacta de archivos esperados; si aparece otro, el ejecutor se detiene y reporta en español.
+12. Antes de entregar un ZIP: cero bloques ```csharp en los prompts, cero residuos en español en los prompts, y cada prompt revisado contra estas reglas.
 
-## 8. Tooling — decisiones tomadas
+## 4. Hallazgos de confiabilidad del ejecutor local
 
-- Modelo principal: **`qwen3.5:9b`**, apuntado directo (sin el `modelfile` personalizado con reglas/skills de "desarrollador DANMAOB") — decisión confirmada tras comparar contra `devstral:24b` y `gpt-oss:20b` (ambos con mejor evidencia de confiabilidad agéntica pero apretados en los 16GB de RAM del Mac M5). No proponer cambio de modelo de nuevo salvo que Luis lo traiga a colación.
-- Extensión: se está evaluando **"Ollama Code"** (de Corey Gaspard, envuelve al agente OpenCode) como alternativa a Cline — dio resultados limpios y eficientes en varias subtareas de TS-00-4 y TS-00-3. Tiene un medidor de contexto con indicador de compactación visible, y un interruptor de "Thinking" en su menú de comportamiento. No abre los archivos automáticamente como Cline mientras trabaja — hay que expandir cada fila de la línea de tiempo para ver el diff.
-- `qwen2.5-coder:7b`: descartado (ver sección 7).
-- SQL Server Developer 2022 corre en Docker en macOS — no se necesita mientras se trabaja solo con el proveedor InMemory de EF Core para pruebas; sí se necesita para migraciones reales y para bootstrap de datos.
-- En macOS usar `curl`, no `curl.exe`. Puerto 5000 ocupado por AirPlay Receiver. Las cadenas de conexión en shell deben ir entre comillas simples para que zsh no interprete los `;` como separadores de comando.
-- `ConnectionStrings__DefaultConnection` debe estar en `~/.zshrc` (no solo exportada en una terminal puntual) para que la terminal que abre el ejecutor local también la herede.
+- Nunca confiar en su autorreporte de build, pruebas o estado de archivos. La fuente de verdad es la terminal de Luis. Ha reportado éxito con archivos que no compilaban y ha sumado mal las pruebas.
+- Sustituye especificaciones por patrones memorizados cuando el patrón es muy reconocible, e inventa APIs de .NET inexistentes. Pedir siempre el error literal del compilador.
+- Cuando se queda sin ideas o compacta contexto, empieza a tocar archivos fuera de su alcance. Si pasa 3-4 minutos sin avance, lee archivos no relacionados, ejecuta `dotnet clean` o borra `bin`/`obj`, hay que cortarlo de inmediato.
+- Tiende a "ampliar" la tarea (crear pruebas no pedidas, validaciones extra, valores por defecto). Las reglas de cada prompt lo prohíben explícitamente.
+- `DanmaobTisaxDbContext.cs` es el archivo más frágil: sesiones sin relación con él lo han modificado y rompieron el filtro de tenant de forma silenciosa.
+- Un `grep` estructural verifica estructura, no lógica: el código de métodos con lógica se revisa leyéndolo. La primera ejecución real (HTTP end-to-end) de un mecanismo nuevo es la única prueba que confirma su lógica.
+- `qwen2.5-coder:7b` está descartado: no invoca herramientas reales.
 
-## 9. Convenciones reales verificadas del repo (no asumir, no inferir)
+## 5. Convenciones verificadas del repositorio (no asumir, no inferir)
 
-- Clase base de entidad: `DanmaobTisax.Domain.Common.BaseEntity` — abstracta, `public Guid Id { get; set; } = Guid.NewGuid()`.
-- Entidades con alcance de tenant implementan `DanmaobTisax.Domain.Common.ITenantOwned` con `Guid TenantId { get; set; }` (no-nullable) — dispara el filtro global de EF Core vía reflexión en `ApplyTenantQueryFilters` dentro de `DanmaobTisaxDbContext`.
-- Construcción de entidades: constructor público con validación `ArgumentException` inline, más un constructor protected/private sin parámetros para EF Core. Sin métodos estáticos `Create()`. Referencia: `Domain/Tenants/Tenant.cs`.
-- `Net/Directory.Build.props` fija `WarningsAsErrors=Nullable` — cualquier warning de nullable es error de compilación en toda la solución.
-- Namespaces: `DanmaobTisax.Domain`, `DanmaobTisax.Application`, `DanmaobTisax.Infrastructure`, `DanmaobTisax.Api`.
-- Resolución de tenant: `ICurrentTenantProvider` (Application/Interfaces) + `CurrentTenantProvider` (Infrastructure/MultiTenancy); el modo `MultiTenant` lanza `NotSupportedException` intencionalmente hasta que exista US-20-2 — nunca evadir esto con un mecanismo temporal inseguro.
-- Relaciones de clave foránea sin propiedad de navegación se configuran con el patrón `entity.HasOne<TRelated>(e => null).WithMany().HasForeignKey(...)` — SÍ es válido en EF Core 10 aunque no exista una propiedad de navegación real en la entidad.
-- Helper de configuración fail-fast: `RequiredConfigurationValidator.EnsurePresent(configuration, key, guidance)` — reutilizar para cualquier tarea futura que necesite un secreto.
-- ADRs de Sprint 1: ADR-0001 Clean Architecture, ADR-0002 Multi-tenancy, ADR-0003 Configuración Segura (TS-00-9). Confirmar siempre la numeración real antes de asignar una nueva.
+- Clase base de entidad: `DanmaobTisax.Domain.Common.BaseEntity` (abstracta, `public Guid Id { get; set; } = Guid.NewGuid()`).
+- Entidades con alcance de tenant implementan `ITenantOwned` (`Guid TenantId`), que activa el filtro global en `ApplyTenantQueryFilters`. Para leer datos de otro tenant de forma intencional (bootstrap, evaluadores de plataforma) se usa `IgnoreQueryFilters()`.
+- Entidades auditadas implementan el marcador `DanmaobTisax.Domain.Auditing.IAuditable`; el interceptor de auditoría registra altas y cambios automáticamente.
+- Construcción de entidades: constructor público con validación `ArgumentException` inline, más un constructor protected sin parámetros para EF Core. Sin métodos estáticos `Create()`.
+- Relaciones sin propiedad de navegación: `entity.HasOne<TRelated>().WithMany().HasForeignKey(...)`, con `HasOne<T>()` SIN argumento (es la forma que usa el código real).
+- `Net/Directory.Build.props` fija `WarningsAsErrors=Nullable`.
+- Namespaces: `DanmaobTisax.Domain`, `.Application`, `.Infrastructure`, `.Api`; las pruebas bajo `DanmaobTisax.Infrastructure.IntegrationTests.<Carpeta>`.
+- Resolución de tenant: `ICurrentTenantProvider` + `CurrentTenantProvider`. En desarrollo se usa `MultiTenancy:Mode = SingleTenant` con `FixedTenantId = 11111111-1111-1111-1111-111111111111`. Al cierre de Sprint 5, el modo `MultiTenant` sigue lanzando `NotSupportedException` a propósito; confirmarlo en el código antes de diseñar algo que dependa de él.
+- Errores de API: ProblemDetails con extensión `errorCode` (por ejemplo `Tenant.PlanNotFound`) y título localizado desde `Infrastructure/Localization/Resources/en.json` y `es.json`.
+- Configuración fail-fast: `RequiredConfigurationValidator.EnsurePresent(configuration, key, guidance)`.
+- Pruebas: todas con base de datos en memoria vía `WebApplicationFactory`; ninguna prueba toca SQL Server.
+- ADRs en `Net/docs/adr/`; confirmar siempre la numeración real con `ls` antes de asignar una nueva.
 
-## 10. Pendientes
+## 6. Entorno de Luis (macOS)
 
-- Terminar TS-00-3 (subtareas 12-24 de 24).
-- Validación legal pendiente: implicaciones de licenciamiento CC BY-ND 4.0 de VDA ISA para traducción al español de la interfaz, uso de marca VDA/ENX/TISAX, y atribución en documentos exportados.
-- Preguntas abiertas: fuente de ISA 6 (sin fuente oficial aún), asignación de módulos a planes comerciales, y mapeo de objetivos de evaluación de prototipos en ISA 2027 (sin validar).
-- Después del backend y del frontend en React viene la app móvil en .NET MAUI.
+- SQL Server Developer en Docker; Luis lo mantiene apagado y solo lo enciende para migraciones, bootstrap y consultas de verificación.
+- Configuración sensible por variables de entorno en `~/.zshrc` (por ejemplo `ConnectionStrings__DefaultConnection`). El proyecto NO usa `dotnet user-secrets`. Para ejecutar la API o el bootstrap en local se pasa `Jwt__SigningKey="$(openssl rand -base64 48)"` en el mismo comando.
+- `dotnet ef migrations add` no necesita la base encendida; `dotnet ef database update` sí.
+- Usar `curl`, no `curl.exe`. El puerto 5000 lo ocupa AirPlay Receiver. En zsh, las cadenas de conexión van entre comillas simples.
+- Patrón fijo de commit después de cada prompt verificado en verde, desde `Net/`: `git add -A`, `git commit -m "Sprint N: avance $(date +%Y-%m-%d_%H:%M)"`, `git push`.
