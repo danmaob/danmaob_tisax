@@ -15,5 +15,7 @@
   "Errors.PlanUnknownModuleCode": "One or more module codes do not exist in the module catalog.",
   "Errors.PlanInUse": "The plan cannot be deactivated because it is assigned to active tenants.",
   "Errors.PlanDefaultCannotBeDeactivated": "The default plan cannot be deactivated.",
-  "Errors.PlanInvalidStateTransition": "The requested status change is not allowed for the current plan status."
+  "Errors.PlanInvalidStateTransition": "The requested status change is not allowed for the current plan status.",
+  "Errors.TenantPlanNotFound": "The requested plan does not exist.",
+  "Errors.TenantPlanInactive": "The requested plan is inactive and cannot be assigned."
 }

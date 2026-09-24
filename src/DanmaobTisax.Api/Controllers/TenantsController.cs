@@ -100,6 +100,22 @@ public class TenantsController : ControllerBase
         return MapFailure(result.Outcome);
     }
 
+    [HttpPut("{id:guid}/plan")]
+    public async Task<ActionResult<TenantDto>> ChangeTenantPlan(
+        Guid id,
+        [FromBody] ChangeTenantPlanRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _tenantAdministrationService.ChangePlanAsync(id, request.PlanId, cancellationToken);
+
+        if (result.Succeeded)
+        {
+            return Ok(result.Value);
+        }
+
+        return MapFailure(result.Outcome);
+    }
+
     [HttpGet("{id:guid}/audit")]
     public async Task<ActionResult<IReadOnlyList<AuditLogDto>>> GetTenantAuditHistory(
         Guid id,
@@ -132,6 +148,8 @@ public class TenantsController : ControllerBase
                 409,
                 _localizer["Errors.TenantInvalidStatusTransition"],
                 "Tenant.InvalidStatusTransition")),
+            TenantOperationOutcome.PlanNotFound => BadRequest(BuildProblem(400, _localizer["Errors.TenantPlanNotFound"], "Tenant.PlanNotFound")),
+            TenantOperationOutcome.PlanInactive => Conflict(BuildProblem(409, _localizer["Errors.TenantPlanInactive"], "Tenant.PlanInactive")),
             _ => throw new InvalidOperationException("Unexpected outcome: " + outcome)
         };
     }
@@ -150,4 +168,5 @@ public class TenantsController : ControllerBase
     }
 
     public record CreateTenantRequest([Required, StringLength(200)] string Name);
+    public record ChangeTenantPlanRequest([Required] Guid PlanId);
 }

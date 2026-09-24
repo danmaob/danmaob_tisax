@@ -16,5 +16,7 @@
   "Errors.PlanUnknownModuleCode": "Uno o más códigos de módulo no existen en el catálogo de módulos.",
   "Errors.PlanInUse": "El plan no se puede desactivar porque está asignado a tenants activos.",
   "Errors.PlanDefaultCannotBeDeactivated": "El plan predeterminado no se puede desactivar.",
-  "Errors.PlanInvalidStateTransition": "El cambio de estado solicitado no está permitido para el estado actual del plan."
+  "Errors.PlanInvalidStateTransition": "El cambio de estado solicitado no está permitido para el estado actual del plan.",
+  "Errors.TenantPlanNotFound": "El plan solicitado no existe.",
+  "Errors.TenantPlanInactive": "El plan solicitado está inactivo y no se puede asignar."
 }
