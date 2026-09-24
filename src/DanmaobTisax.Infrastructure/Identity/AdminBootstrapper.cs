@@ -1,5 +1,6 @@
 using DanmaobTisax.Application.Interfaces;
 using DanmaobTisax.Domain.Identity;
+using DanmaobTisax.Domain.Tenants;
 using DanmaobTisax.Infrastructure.Configuration;
 using DanmaobTisax.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,18 @@ public static class AdminBootstrapper
         var tenantId = Guid.Parse(configuration["BootstrapAdmin:TenantId"] ?? string.Empty);
         var email = (configuration["BootstrapAdmin:Email"] ?? string.Empty)!;
         var password = (configuration["BootstrapAdmin:Password"] ?? string.Empty)!;
-
+        var tenantName = configuration["BootstrapAdmin:TenantName"];
+        if (string.IsNullOrWhiteSpace(tenantName))
+        {
+            tenantName = "Default Organization";
+        }
+        var tenantExists = await context.Tenants.AnyAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenantExists == false)
+        {
+            context.Tenants.Add(new Tenant(tenantName!) { Id = tenantId });
+            await context.SaveChangesAsync(cancellationToken);
+            Console.WriteLine($"Tenant row created for TenantId '{tenantId}' with the default plan.");
+        }
         // Check if a User already exists for this TenantId + Email combination
         var existingUser = await context.Users
             .FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == email, cancellationToken);
