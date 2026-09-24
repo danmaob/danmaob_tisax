@@ -104,17 +104,17 @@ builder.Services.AddApiVersioning(options =>
 
 var app = builder.Build();
 
-if (args.Contains("--bootstrap-admin"))
-{
-    await AdminBootstrapper.RunAsync(app.Services, default);
-    return;
-}
-
 using (var startupScope = app.Services.CreateScope())
 {
     var scopeContext = startupScope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
     await scopeContext.Database.EnsureCreatedAsync();
     await PermissionCatalogSeeder.SeedAsync(scopeContext, CancellationToken.None);
+}
+
+if (args.Contains("--bootstrap-admin"))
+{
+    await AdminBootstrapper.RunAsync(app.Services, default);
+    return;
 }
 
 // Configure the HTTP request pipeline.

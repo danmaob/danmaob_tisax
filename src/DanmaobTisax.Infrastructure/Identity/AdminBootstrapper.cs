@@ -42,12 +42,26 @@ public static class AdminBootstrapper
             Console.WriteLine($"Tenant row created for TenantId '{tenantId}' with the default plan.");
         }
         // Check if a User already exists for this TenantId + Email combination
-        var existingUser = await context.Users
-            .FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == email, cancellationToken);
+        var existingUser = await context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == email, cancellationToken);
 
         if (existingUser != null)
         {
-            Console.WriteLine($"A user already exists for TenantId '{tenantId}' and Email '{email}'. Skipping creation.");
+            var adminRole = await context.Roles.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Name == "Administrator" && r.IsSystemRole, cancellationToken);
+            if (adminRole is null)
+            {
+                Console.WriteLine($"A user already exists for TenantId '{tenantId}' and Email '{email}', but no Administrator role was found. No permissions were granted.");
+                return;
+            }
+            var grantedPermissionIds = await context.RolePermissions.Where(rp => rp.RoleId == adminRole.Id).Select(rp => rp.PermissionId).ToListAsync(cancellationToken);
+            var missingPermissions = await context.Permissions.Where(p => grantedPermissionIds.Contains(p.Id) == false).ToListAsync(cancellationToken);
+            for (int i = 0; i < missingPermissions.Count; i++)
+            {
+                var permission = missingPermissions[i];
+                var rolePermission = new RolePermission(adminRole.Id, permission.Id);
+                context.RolePermissions.Add(rolePermission);
+            }
+            await context.SaveChangesAsync(cancellationToken);
+            Console.WriteLine($"A user already exists for TenantId '{tenantId}' and Email '{email}'. Skipping creation. {missingPermissions.Count} missing permission(s) granted to the Administrator role.");
             return;
         }
 
