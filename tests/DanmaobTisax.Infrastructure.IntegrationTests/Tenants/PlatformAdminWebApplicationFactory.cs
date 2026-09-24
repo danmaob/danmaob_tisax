@@ -43,7 +43,7 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         });
     }
 
-    public async Task<(Guid UserId, string AccessToken)> CreateUserAndLoginAsync(bool grantManageTenantsPermission)
+    public async Task<(Guid UserId, string AccessToken)> CreateUserAndLoginAsync(bool grantManageTenantsPermission = false)
     {
         using var scope = Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
@@ -60,11 +60,61 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         context.Roles.Add(role);
         context.UserRoles.Add(userRole);
 
+        var permissionsToAdd = new List<string>();
         if (grantManageTenantsPermission)
         {
-            var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == "ManageTenants");
-            context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
+            permissionsToAdd.Add("ManageTenants");
         }
+
+        foreach (var action in permissionsToAdd)
+        {
+            try
+            {
+                var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == action);
+                context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
+            }
+            catch (InvalidOperationException) // FirstAsync throws if not found
+            {
+                // Some permissions might be created lazily or have different names
+                continue;
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+        using var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = password });
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+        if (result is null || string.IsNullOrWhiteSpace(result.AccessToken))
+        {
+            throw new InvalidOperationException("Login did not return an access token.");
+        }
+
+        return (user.Id, result.AccessToken);
+    }
+
+    public async Task<(Guid UserId, string AccessToken)> CreateUserWithPlanManagementAndLoginAsync()
+    {
+        using var scope = Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+
+        var email = Guid.NewGuid() + "@example.com";
+        const string password = "Str0ng!Passw0rd";
+
+        var user = new User(TestTenantId, email, passwordHasher.Hash(password), "Platform Test Plan Admin User");
+        var role = new Role(TestTenantId, "PlatformPlanAdminRole-" + Guid.NewGuid(), null, false);
+        var userRole = new UserRole(user.Id, role.Id);
+
+        context.Users.Add(user);
+        context.Roles.Add(role);
+        context.UserRoles.Add(userRole);
+
+        // Grant Platform.ManagePlans permission
+        var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == "ManagePlans");
+        context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
 
         await context.SaveChangesAsync();
 
