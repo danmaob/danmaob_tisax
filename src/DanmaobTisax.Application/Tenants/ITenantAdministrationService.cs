@@ -39,4 +39,7 @@ public interface ITenantAdministrationService
     /// Returns null when the tenant does not exist; otherwise returns that tenant's audit entries in chronological order.
     /// </summary>
     Task<IReadOnlyList<AuditLogDto>?> GetAuditHistoryAsync(Guid tenantId, CancellationToken cancellationToken);
+
+    /// <summary>Assigns a different plan to the tenant. Existing tenant data is never deleted. Outcomes: Succeeded, NotFound, PlanNotFound, PlanInactive.</summary>
+    Task<TenantOperationResult> ChangePlanAsync(Guid tenantId, Guid planId, CancellationToken cancellationToken = default);
 }

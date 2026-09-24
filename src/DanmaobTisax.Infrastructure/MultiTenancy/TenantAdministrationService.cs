@@ -102,6 +102,39 @@ public class TenantAdministrationService : ITenantAdministrationService
         return await ApplyTransitionAsync(tenantId, tenant => tenant.Deactivate(), cancellationToken);
     }
 
+    public async Task<TenantOperationResult> ChangePlanAsync(Guid tenantId, Guid planId, CancellationToken cancellationToken)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+
+        if (tenant is null)
+        {
+            return new TenantOperationResult(TenantOperationOutcome.NotFound, null);
+        }
+
+        if (planId == Guid.Empty)
+        {
+            return new TenantOperationResult(TenantOperationOutcome.PlanNotFound, null);
+        }
+
+        var plan = await _context.Plans.AsNoTracking().FirstOrDefaultAsync(p => p.Id == planId, cancellationToken);
+
+        if (plan is null)
+        {
+            return new TenantOperationResult(TenantOperationOutcome.PlanNotFound, null);
+        }
+
+        if (plan.IsActive == false)
+        {
+            return new TenantOperationResult(TenantOperationOutcome.PlanInactive, null);
+        }
+
+        tenant.ChangePlan(planId);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return new TenantOperationResult(TenantOperationOutcome.Succeeded, ToDto(tenant));
+    }
+
     public async Task<IReadOnlyList<AuditLogDto>?> GetAuditHistoryAsync(Guid tenantId, CancellationToken cancellationToken)
     {
         bool exists = await _context.Tenants.AnyAsync(t => t.Id == tenantId, cancellationToken);
@@ -150,7 +183,8 @@ public class TenantAdministrationService : ITenantAdministrationService
             Id = tenant.Id,
             Name = tenant.Name,
             Status = tenant.Status.ToString(),
-            CreatedAtUtc = tenant.CreatedAtUtc
+            CreatedAtUtc = tenant.CreatedAtUtc,
+            PlanId = tenant.PlanId
         };
     }
 }

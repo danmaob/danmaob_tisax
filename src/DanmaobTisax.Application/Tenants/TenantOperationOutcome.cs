@@ -6,5 +6,9 @@ public enum TenantOperationOutcome
     NotFound,
     InvalidName,
     NameAlreadyExists,
-    InvalidStatusTransition
+    InvalidStatusTransition,
+	/// <summary>The referenced plan was not found.</summary>
+	PlanNotFound,
+	/// <summary>The referenced plan is inactive.</summary>
+	PlanInactive
 }

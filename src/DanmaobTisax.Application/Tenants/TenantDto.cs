@@ -9,4 +9,6 @@ public sealed class TenantDto
     public string Status { get; set; } = string.Empty;
 
     public DateTime CreatedAtUtc { get; set; }
+
+    public Guid PlanId { get; set; }
 }
