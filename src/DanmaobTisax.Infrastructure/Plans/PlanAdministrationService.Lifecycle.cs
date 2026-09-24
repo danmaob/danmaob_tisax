@@ -79,46 +79,35 @@ public partial class PlanAdministrationService
 
     public async Task<PlanOperationResult> SetModulesAsync(Guid planId, IReadOnlyList<string> moduleCodes, CancellationToken cancellationToken)
     {
-        if (moduleCodes is null || moduleCodes.Count == 0)
+        var plan = await _context.Plans.AsNoTracking().FirstOrDefaultAsync(p => p.Id == planId, cancellationToken);
+
+        if (plan is null)
+        {
+            return new PlanOperationResult(PlanOperationOutcome.NotFound, null);
+        }
+
+        if (moduleCodes.Any(string.IsNullOrWhiteSpace))
         {
             return new PlanOperationResult(PlanOperationOutcome.UnknownModuleCode, null);
         }
 
-        var requestedCodes = new List<string>();
+        var requestedCodes = moduleCodes.Select(c => c.Trim()).Distinct(StringComparer.Ordinal).ToList();
 
-        foreach (var code in moduleCodes)
+        var catalogCodes = await _context.FunctionalModules.Select(fm => fm.Code).ToListAsync(cancellationToken);
+
+        if (requestedCodes.Any(c => catalogCodes.Contains(c, StringComparer.Ordinal) == false))
         {
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                return new PlanOperationResult(PlanOperationOutcome.UnknownModuleCode, null);
-            }
-
-            requestedCodes.Add(code.Trim());
+            return new PlanOperationResult(PlanOperationOutcome.UnknownModuleCode, null);
         }
 
-        var distinctCodes = requestedCodes.Distinct(StringComparer.Ordinal).ToList();
-
-        var catalogCodes = await _context.FunctionalModules
-            .Select(fm => fm.Code)
-            .ToListAsync(cancellationToken);
-
-        foreach (var code in distinctCodes)
-        {
-            if (!catalogCodes.Contains(code, StringComparer.Ordinal))
-            {
-                return new PlanOperationResult(PlanOperationOutcome.UnknownModuleCode, null);
-            }
-        }
-
-        var planWithTracking = await _context.Plans.FirstOrDefaultAsync(p => p.Id == planId, cancellationToken);
-
-        var existingRows = await _context.PlanModules.ToListAsync(cancellationToken);
+        var existingRows = await _context.PlanModules.Where(pm => pm.PlanId == planId).ToListAsync(cancellationToken);
 
         foreach (var code in catalogCodes)
         {
             var row = existingRows.FirstOrDefault(r => r.ModuleCode == code);
+            var isRequested = requestedCodes.Contains(code, StringComparer.Ordinal);
 
-            if (distinctCodes.Contains(code))
+            if (isRequested == true)
             {
                 if (row is null)
                 {
@@ -129,27 +118,16 @@ public partial class PlanAdministrationService
                     row.Enable();
                 }
             }
-            else
+            else if (row is not null && row.IsEnabled == true)
             {
-                if (row is not null && row.IsEnabled == true)
-                {
-                    row.Disable();
-                }
+                row.Disable();
             }
         }
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var planFromTrackingContext = existingRows.FirstOrDefault(r => r.PlanId == planId);
+        var enabledCodes = await GetEnabledModuleCodesAsync(planId, cancellationToken);
 
-        var moduleCodesList = await GetEnabledModuleCodesAsync(planId, cancellationToken);
-
-        // The plan must exist at this point; if it doesn't, treat as not found
-        if (planWithTracking is null)
-        {
-            return new PlanOperationResult(PlanOperationOutcome.NotFound, null);
-        }
-
-        return new PlanOperationResult(PlanOperationOutcome.Succeeded, ToDto(planWithTracking, moduleCodesList));
+        return new PlanOperationResult(PlanOperationOutcome.Succeeded, ToDto(plan, enabledCodes));
     }
 }

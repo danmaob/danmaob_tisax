@@ -88,6 +88,6 @@ public partial class PlanEndpointsTests
 
         var fetchedPlanDto = await getResponse.Content.ReadFromJsonAsync<PlanDto>();
         Assert.NotNull(fetchedPlanDto);
-        Assert.Empty(fetchedPlanDto.ModuleCodes);
+        Assert.Equal(new[] { "Evidence" }, fetchedPlanDto.ModuleCodes);
     }
 }
