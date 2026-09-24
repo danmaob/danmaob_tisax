@@ -8,10 +8,7 @@ namespace DanmaobTisax.Application.Tenants;
 public interface IModuleAccessEvaluator
 {
     /// <summary>
-    /// Verifica si el módulo está habilitado para el tenant especificado.
-    /// Devuelve true solo cuando existe una entrada explícita para ese tenant y módulo que está activada.
-    /// Devuelve false cuando la entrada está deshabilitada o no existe.
-    /// Las implementaciones deben evaluar en cada llamada y no deben cachear.
+    /// Determines whether the module is enabled for the tenant. A TenantModule row for that tenant and module is an explicit exception and decides the result on its own (enabled or disabled). Without such a row, the result is true only when the tenant exists and its plan has that module enabled in the module-plan matrix. Implementations must evaluate on every call and must not cache.
     /// </summary>
     /// <param name="tenantId">El ID del tenant para verificar el acceso al módulo.</param>
     /// <param name="moduleCode">El código del módulo a verificar.</param>

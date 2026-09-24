@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using DanmaobTisax.Application.Auditing;
@@ -20,7 +21,7 @@ public partial class TenantPlanEndpointsTests
         
         var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(problem.TryGetProperty("errorCode", out var errorCode));
-        Assert.Equal(Tenant.PlanNotFound.ToString(), errorCode.GetString());
+        Assert.Equal("Tenant.PlanNotFound", errorCode.GetString());
 
         var getResponse = await client.GetAsync("/api/v1/platform/tenants/" + tenant.Id);
         var fetched = await getResponse.Content.ReadFromJsonAsync<TenantDto>();
@@ -44,7 +45,7 @@ public partial class TenantPlanEndpointsTests
         
         var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(problem.TryGetProperty("errorCode", out var errorCode));
-        Assert.Equal(Tenant.PlanInactive.ToString(), errorCode.GetString());
+        Assert.Equal("Tenant.PlanInactive", errorCode.GetString());
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public partial class TenantPlanEndpointsTests
         
         var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(problem.TryGetProperty("errorCode", out var errorCode));
-        Assert.Equal(Plan.InUse.ToString(), errorCode.GetString());
+        Assert.Equal("Plan.InUse", errorCode.GetString());
     }
 
     [Fact]

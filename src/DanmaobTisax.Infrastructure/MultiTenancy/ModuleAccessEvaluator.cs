@@ -16,9 +16,16 @@ public class ModuleAccessEvaluator : IModuleAccessEvaluator
 
     public async Task<bool> IsModuleEnabledAsync(Guid tenantId, string moduleCode, CancellationToken cancellationToken)
     {
-        return await _context.TenantModules
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .AnyAsync(m => m.TenantId == tenantId && m.ModuleCode == moduleCode && m.IsEnabled, cancellationToken);
+        var exceptionRow = await _context.TenantModules.IgnoreQueryFilters().AsNoTracking().Where(m => m.TenantId == tenantId && m.ModuleCode == moduleCode).Select(m => (bool?)m.IsEnabled).FirstOrDefaultAsync(cancellationToken);
+        if (exceptionRow.HasValue)
+        {
+            return exceptionRow.Value;
+        }
+        var planId = await _context.Tenants.AsNoTracking().Where(t => t.Id == tenantId).Select(t => (Guid?)t.PlanId).FirstOrDefaultAsync(cancellationToken);
+        if (planId == null)
+        {
+            return false;
+        }
+        return await _context.PlanModules.AsNoTracking().AnyAsync(pm => pm.PlanId == planId.Value && pm.ModuleCode == moduleCode && pm.IsEnabled, cancellationToken);
     }
 }
