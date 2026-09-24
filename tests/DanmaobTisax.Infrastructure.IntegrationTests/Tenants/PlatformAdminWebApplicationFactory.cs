@@ -43,7 +43,7 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         });
     }
 
-    public async Task<(Guid UserId, string AccessToken)> CreateUserAndLoginAsync(bool grantManageTenantsPermission = false)
+    public async Task<(Guid UserId, string AccessToken)> CreateUserAndLoginAsync(bool grantManageTenantsPermission)
     {
         using var scope = Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
@@ -60,24 +60,10 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         context.Roles.Add(role);
         context.UserRoles.Add(userRole);
 
-        var permissionsToAdd = new List<string>();
         if (grantManageTenantsPermission)
         {
-            permissionsToAdd.Add("ManageTenants");
-        }
-
-        foreach (var action in permissionsToAdd)
-        {
-            try
-            {
-                var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == action);
-                context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
-            }
-            catch (InvalidOperationException) // FirstAsync throws if not found
-            {
-                // Some permissions might be created lazily or have different names
-                continue;
-            }
+            var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == "ManageTenants");
+            context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
         }
 
         await context.SaveChangesAsync();
