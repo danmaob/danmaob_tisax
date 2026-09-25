@@ -35,6 +35,7 @@ public class DanmaobTisaxDbContext : DbContext
     public DbSet<FunctionalModule> FunctionalModules { get; set; }
     public DbSet<Plan> Plans { get; set; }
     public DbSet<PlanModule> PlanModules { get; set; }
+    public DbSet<PlatformAdministrator> PlatformAdministrators { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -227,6 +228,21 @@ public class DanmaobTisaxDbContext : DbContext
                 .HasForeignKey(e => e.ModuleCode)
                 .HasPrincipalKey(m => m.Code)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PlatformAdministrator>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.FailedLoginAttemptCount);
+            entity.Property(e => e.LockoutEndUtc);
+            entity.Property(e => e.LastLoginAtUtc);
+            entity.Property(e => e.PasswordChangedAtUtc);
+            entity.HasIndex(e => e.Email)
+                .IsUnique()
+                .HasDatabaseName("IX_PlatformAdministrator_Email");
         });
 
         PlanCatalogSeedData.Apply(modelBuilder);
