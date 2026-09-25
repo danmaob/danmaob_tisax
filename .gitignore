@@ -4,3 +4,6 @@ obj/
 *.user
 .DS_Store
 TestResults/
+
+# Llaves de Data Protection generadas al ejecutar la API en local
+App_Data/
