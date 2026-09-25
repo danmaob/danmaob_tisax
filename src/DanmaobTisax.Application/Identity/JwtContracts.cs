@@ -29,4 +29,5 @@ public interface IJwtTokenService
     AccessTokenResult GenerateAccessToken(Guid userId, Guid tenantId, string email, IReadOnlyList<string> roleNames, IReadOnlyList<string> permissionCodes);
     GeneratedRefreshToken GenerateRefreshToken();
     string HashToken(string rawToken);
+    AccessTokenResult GeneratePlatformAccessToken(Guid platformAdministratorId, string email, IReadOnlyList<string> permissionCodes);
 }

@@ -60,6 +60,32 @@ public class JwtTokenService : IJwtTokenService
         };
     }
 
+    public AccessTokenResult GeneratePlatformAccessToken(Guid platformAdministratorId, string email, IReadOnlyList<string> permissionCodes)
+    {
+        var now = DateTime.UtcNow;
+        var expiresAtUtc = now.AddMinutes(_options.AccessTokenLifetimeMinutes);
+
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
+        var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("sub", platformAdministratorId.ToString()),
+            new Claim("email", email),
+            new Claim(PlatformClaims.PrincipalTypeClaim, PlatformClaims.PlatformPrincipalType)
+        };
+
+        foreach (var permissionCode in permissionCodes)
+        {
+            claims.Add(new Claim("perm", permissionCode));
+        }
+
+        var token = new JwtSecurityToken(issuer: _options.Issuer, audience: _options.Audience, claims: claims, expires: expiresAtUtc, signingCredentials: signingCredentials);
+
+        return new AccessTokenResult { Token = new JwtSecurityTokenHandler().WriteToken(token), ExpiresAtUtc = expiresAtUtc };
+    }
+
     public GeneratedRefreshToken GenerateRefreshToken()
     {
         var rawBytes = RandomNumberGenerator.GetBytes(64);
