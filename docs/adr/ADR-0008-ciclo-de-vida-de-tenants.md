@@ -44,6 +44,8 @@ Se agrega el permiso `Platform.ManageTenants`, distinto de `Tenant.ManageSetting
 
 **Limitación explícita (hasta US-20-6):** todavía no existen Super Administradores independientes de los tenants. `AdminBootstrapper` asigna al rol `Administrator` de su tenant TODOS los permisos del catálogo (solo cuando crea el rol), incluido `Platform.ManageTenants`. En una instalación de un solo tenant (On-Premise) el administrador de la instalación es de hecho el de plataforma; en SaaS no lo sería. US-20-6 debe (a) crear usuarios de plataforma independientes de cualquier tenant y (b) excluir todo permiso `Platform.*` de los roles de tenant.
 
+**Actualización (Sprint 6):** limitación resuelta por ADR-0014 (US-20-6): los administradores de plataforma viven en su propia tabla, con su propio inicio de sesión, y los roles de tenant ya no pueden usar permisos `Platform.*`.
+
 ### D7 — Unicidad de nombre
 
 El nombre del tenant (sin espacios en los extremos, máximo 200 caracteres) es único sin distinguir mayúsculas. Se verifica en el servicio (`ToLower()` en ambos lados, para que SQL Server e InMemory coincidan) y se refuerza con el índice único `IX_Tenant_Name`. Una creación concurrente del mismo nombre puede saltarse la verificación del servicio; el índice protege la integridad y el segundo intento fallaría como error inesperado (500). Aceptado por ser una operación de plataforma de muy baja frecuencia.
