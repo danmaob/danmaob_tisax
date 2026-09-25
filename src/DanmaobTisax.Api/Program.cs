@@ -117,6 +117,12 @@ if (args.Contains("--bootstrap-admin"))
     return;
 }
 
+if (args.Contains("--bootstrap-platform-admin"))
+{
+    await PlatformAdminBootstrapper.RunAsync(app.Services, default);
+    return;
+}
+
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 app.UseStatusCodePages();
