@@ -7,6 +7,7 @@ public class PlatformAdministrator : BaseEntity, IAuditable
 {
     public string Email { get; private set; } = string.Empty;
 
+    [AuditRedacted]
     public string PasswordHash { get; private set; } = string.Empty;
 
     public string FullName { get; private set; } = string.Empty;

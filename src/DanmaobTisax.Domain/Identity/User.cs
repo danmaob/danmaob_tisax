@@ -7,6 +7,7 @@ public class User : BaseEntity, ITenantOwned, IAuditable
 {
     public Guid TenantId { get; set; }
     public string Email { get; set; } = string.Empty;
+    [AuditRedacted]
     public string PasswordHash { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
