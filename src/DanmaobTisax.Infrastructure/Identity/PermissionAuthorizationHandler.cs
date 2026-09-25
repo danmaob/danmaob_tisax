@@ -9,6 +9,15 @@ public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionReq
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
+        if (requirement.PermissionCode.StartsWith("Platform.", StringComparison.Ordinal) == true)
+        {
+            var principalType = context.User.FindFirst(PlatformClaims.PrincipalTypeClaim)?.Value;
+            if (principalType != PlatformClaims.PlatformPrincipalType)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
         foreach (var permClaim in context.User.FindAll("perm"))
         {
             if (permClaim.Value == requirement.PermissionCode)
