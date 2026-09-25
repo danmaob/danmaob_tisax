@@ -15,7 +15,7 @@ public partial class PlanEndpointsTests
     public async Task SetModules_ValidCodes_ReplacesEnabledModules()
     {
         var permissions = new[] { "ManagePlans" };
-        var result = await _factory.CreateUserWithPlatformPermissionsAndLoginAsync(permissions);
+        var result = await _factory.CreatePlatformAdministratorAndLoginAsync();
         using var adminClient = _factory.CreateClientWithToken(result.AccessToken);
 
         // First, create a plan with initial module codes
@@ -64,7 +64,7 @@ public partial class PlanEndpointsTests
         // Module codes must be valid functional module codes (e.g., from FunctionalModuleCodes)
         // Passing an invalid code like "InvalidModule" should return 400 BadRequest
         var permissions = new[] { "ManagePlans" };
-        var result = await _factory.CreateUserWithPlatformPermissionsAndLoginAsync(permissions);
+        var result = await _factory.CreatePlatformAdministratorAndLoginAsync();
         using var adminClient = _factory.CreateClientWithToken(result.AccessToken);
 
         var plan = await _factory.CreatePlanAsync(adminClient, new[] { FunctionalModuleCodes.Evidence });

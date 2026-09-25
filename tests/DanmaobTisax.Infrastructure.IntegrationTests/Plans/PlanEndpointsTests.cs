@@ -18,7 +18,7 @@ public partial class PlanEndpointsTests : IClassFixture<PlatformAdminWebApplicat
 
     private async Task<HttpClient> CreatePlanAdminClientAsync()
     {
-        var (userId, token) = await _factory.CreateUserWithPlatformPermissionsAndLoginAsync(new[] { "ManagePlans" });
+        var (userId, token) = await _factory.CreatePlatformAdministratorAndLoginAsync();
         return _factory.CreateClientWithToken(token);
     }
 

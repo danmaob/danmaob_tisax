@@ -24,7 +24,7 @@ public partial class PlanGateEndpointsTests : IClassFixture<PlanGateWebApplicati
 
     private async Task<HttpClient> CreateAdminClientAsync()
     {
-        var login = await _factory.CreateUserWithPlatformPermissionsAndLoginAsync(new[] { "ManageTenants", "ManagePlans" });
+        var login = await _factory.CreatePlatformAdministratorAndLoginAsync();
         return _factory.CreateClientWithToken(login.AccessToken);
     }
 
