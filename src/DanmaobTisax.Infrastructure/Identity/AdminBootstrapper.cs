@@ -53,7 +53,7 @@ public static class AdminBootstrapper
                 return;
             }
             var grantedPermissionIds = await context.RolePermissions.Where(rp => rp.RoleId == adminRole.Id).Select(rp => rp.PermissionId).ToListAsync(cancellationToken);
-            var missingPermissions = await context.Permissions.Where(p => grantedPermissionIds.Contains(p.Id) == false).ToListAsync(cancellationToken);
+            var missingPermissions = await context.Permissions.Where(p => grantedPermissionIds.Contains(p.Id) == false && p.Module != "Platform").ToListAsync(cancellationToken);
             for (int i = 0; i < missingPermissions.Count; i++)
             {
                 var permission = missingPermissions[i];
@@ -61,7 +61,11 @@ public static class AdminBootstrapper
                 context.RolePermissions.Add(rolePermission);
             }
             await context.SaveChangesAsync(cancellationToken);
+            var platformPermissionIds = await context.Permissions.Where(p => p.Module == "Platform").Select(p => p.Id).ToListAsync(cancellationToken);
+            var platformGrants = await context.RolePermissions.Where(rp => rp.RoleId == adminRole.Id && platformPermissionIds.Contains(rp.PermissionId)).ToListAsync(cancellationToken);
+            context.RolePermissions.RemoveRange(platformGrants);
             Console.WriteLine($"A user already exists for TenantId '{tenantId}' and Email '{email}'. Skipping creation. {missingPermissions.Count} missing permission(s) granted to the Administrator role.");
+            Console.WriteLine($"{platformGrants.Count} platform permission grant(s) removed from the Administrator role.");
             return;
         }
 
@@ -81,7 +85,7 @@ public static class AdminBootstrapper
         context.UserRoles.Add(userRole);
 
         // Load all Permissions from the catalog and create RolePermission entries
-        var permissions = await context.Permissions.ToListAsync(cancellationToken);
+        var permissions = await context.Permissions.Where(p => p.Module != "Platform").ToListAsync(cancellationToken);
         foreach (var permission in permissions)
         {
             var rolePermission = new RolePermission(role.Id, permission.Id);
