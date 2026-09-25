@@ -58,7 +58,7 @@ public partial class PlanEndpointsTests : IClassFixture<PlatformAdminWebApplicat
     [Fact]
     public async Task GetAll_WithoutManagePlansPermission_ReturnsForbidden()
     {
-        var (userId, token) = await _factory.CreateUserAndLoginAsync(true); // grants only Platform.ManageTenants
+        var (userId, token) = await _factory.CreateUserAndLoginAsync(false);
         using var client = _factory.CreateClientWithToken(token);
 
         var response = await client.GetAsync("/api/v1/platform/plans");

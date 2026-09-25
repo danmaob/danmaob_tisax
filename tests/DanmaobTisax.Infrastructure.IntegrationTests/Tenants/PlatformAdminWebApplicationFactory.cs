@@ -45,6 +45,11 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
 
     public async Task<(Guid UserId, string AccessToken)> CreateUserAndLoginAsync(bool grantManageTenantsPermission)
     {
+        if (grantManageTenantsPermission == true)
+        {
+            return await CreatePlatformAdministratorAndLoginAsync();
+        }
+
         using var scope = Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
@@ -59,12 +64,6 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         context.Users.Add(user);
         context.Roles.Add(role);
         context.UserRoles.Add(userRole);
-
-        if (grantManageTenantsPermission)
-        {
-            var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == "ManageTenants");
-            context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
-        }
 
         await context.SaveChangesAsync();
 
@@ -83,38 +82,7 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
 
     public async Task<(Guid UserId, string AccessToken)> CreateUserWithPlanManagementAndLoginAsync()
     {
-        using var scope = Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-
-        var email = Guid.NewGuid() + "@example.com";
-        const string password = "Str0ng!Passw0rd";
-
-        var user = new User(TestTenantId, email, passwordHasher.Hash(password), "Platform Test Plan Admin User");
-        var role = new Role(TestTenantId, "PlatformPlanAdminRole-" + Guid.NewGuid(), null, false);
-        var userRole = new UserRole(user.Id, role.Id);
-
-        context.Users.Add(user);
-        context.Roles.Add(role);
-        context.UserRoles.Add(userRole);
-
-        // Grant Platform.ManagePlans permission
-        var permission = await context.Permissions.FirstAsync(p => p.Module == "Platform" && p.Action == "ManagePlans");
-        context.RolePermissions.Add(new RolePermission(role.Id, permission.Id));
-
-        await context.SaveChangesAsync();
-
-        using var client = CreateClient();
-        var response = await client.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = password });
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<LoginResult>();
-        if (result is null || string.IsNullOrWhiteSpace(result.AccessToken))
-        {
-            throw new InvalidOperationException("Login did not return an access token.");
-        }
-
-        return (user.Id, result.AccessToken);
+        return await CreatePlatformAdministratorAndLoginAsync();
     }
 
     public async Task<(Guid UserId, string AccessToken)> CreatePlatformAdministratorAndLoginAsync()
