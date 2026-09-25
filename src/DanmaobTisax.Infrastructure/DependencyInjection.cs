@@ -34,6 +34,7 @@ public static class DependencyInjection
 
         // Register AuthenticationService
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IPlatformAuthenticationService, PlatformAuthenticationService>();
 
         services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
 
