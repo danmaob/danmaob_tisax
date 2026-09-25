@@ -1,10 +1,19 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Reflection;
+using DanmaobTisax.Domain.Auditing;
 
 namespace DanmaobTisax.Infrastructure.Auditing;
 
 public static class AuditValueSerializer
 {
+    private const string RedactedValue = "[REDACTED]";
+
+    private static bool IsRedacted(PropertyEntry property)
+    {
+        return property.Metadata.PropertyInfo?.GetCustomAttribute<AuditRedactedAttribute>() is not null;
+    }
+
     private static string SerializeProperties(EntityEntry entry, Func<string, object?> getValue)
     {
         var properties = new Dictionary<string, object?>();
@@ -13,7 +22,7 @@ public static class AuditValueSerializer
         {
             try
             {
-                properties[property.Metadata.Name] = getValue(property.Metadata.Name);
+                properties[property.Metadata.Name] = IsRedacted(property) == true ? RedactedValue : getValue(property.Metadata.Name);
             }
             catch
             {
@@ -44,7 +53,7 @@ public static class AuditValueSerializer
             {
                 try
                 {
-                    modifiedProperties[property.Metadata.Name] = entry.Property(property.Metadata.Name).OriginalValue;
+                    modifiedProperties[property.Metadata.Name] = IsRedacted(property) == true ? RedactedValue : entry.Property(property.Metadata.Name).OriginalValue;
                 }
                 catch
                 {
@@ -66,7 +75,7 @@ public static class AuditValueSerializer
             {
                 try
                 {
-                    modifiedProperties[property.Metadata.Name] = entry.Property(property.Metadata.Name).CurrentValue;
+                    modifiedProperties[property.Metadata.Name] = IsRedacted(property) == true ? RedactedValue : entry.Property(property.Metadata.Name).CurrentValue;
                 }
                 catch
                 {
