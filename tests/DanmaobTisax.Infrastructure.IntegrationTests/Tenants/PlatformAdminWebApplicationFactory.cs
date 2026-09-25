@@ -117,6 +117,28 @@ public class PlatformAdminWebApplicationFactory : AuthEndpointsWebApplicationFac
         return (user.Id, result.AccessToken);
     }
 
+    public async Task<(Guid UserId, string AccessToken)> CreatePlatformAdministratorAndLoginAsync()
+    {
+        using var scope = Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DanmaobTisaxDbContext>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var email = Guid.NewGuid() + "@example.com";
+        const string password = "Str0ng!Passw0rd";
+        var administrator = new PlatformAdministrator(email, passwordHasher.Hash(password), "Platform Test Administrator");
+        context.PlatformAdministrators.Add(administrator);
+        await context.SaveChangesAsync();
+        using var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/v1/platform/auth/login", new { Email = email, Password = password });
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+        if (result is null || string.IsNullOrWhiteSpace(result.AccessToken))
+        {
+            throw new InvalidOperationException("Platform login did not return an access token.");
+        }
+
+        return (administrator.Id, result.AccessToken);
+    }
+
     public HttpClient CreateClientWithToken(string accessToken)
     {
         var client = CreateClient();
