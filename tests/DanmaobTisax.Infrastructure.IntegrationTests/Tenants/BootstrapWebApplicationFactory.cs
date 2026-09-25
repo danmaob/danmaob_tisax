@@ -14,5 +14,7 @@ public class BootstrapWebApplicationFactory : PlatformAdminWebApplicationFactory
         builder.UseSetting("BootstrapAdmin:Email", "bootstrap-admin@example.com");
         builder.UseSetting("BootstrapAdmin:Password", "Str0ng!Passw0rd");
         builder.UseSetting("BootstrapAdmin:TenantName", BootstrapTenantName);
+        builder.UseSetting("BootstrapPlatformAdmin:Email", "bootstrap-admin@example.com");
+        builder.UseSetting("BootstrapPlatformAdmin:Password", "Str0ng!Passw0rd");
     }
 }
