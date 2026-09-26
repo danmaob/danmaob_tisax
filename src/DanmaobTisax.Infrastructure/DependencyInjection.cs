@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantStatusEvaluator, TenantStatusEvaluator>();
 
         services.AddScoped<ITenantAdministrationService, TenantAdministrationService>();
+        services.AddScoped<ITenantModuleAdministrationService, TenantModuleAdministrationService>();
         services.AddScoped<IPlanAdministrationService, PlanAdministrationService>();
 
         // Register authorization handler
