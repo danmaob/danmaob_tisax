@@ -34,5 +34,5 @@ public class CurrentUserService : ICurrentUserService
     /// <summary>
     /// Gets the current user's display name if authenticated.
     /// </summary>
-    public string? DisplayName => User?.FindFirst(ClaimTypes.Name)?.Value;
+    public string? DisplayName => User?.FindFirst("email")?.Value;
 }
