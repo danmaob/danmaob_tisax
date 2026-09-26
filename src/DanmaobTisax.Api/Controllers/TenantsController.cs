@@ -150,6 +150,7 @@ public class TenantsController : ControllerBase
                 "Tenant.InvalidStatusTransition")),
             TenantOperationOutcome.PlanNotFound => BadRequest(BuildProblem(400, _localizer["Errors.TenantPlanNotFound"], "Tenant.PlanNotFound")),
             TenantOperationOutcome.PlanInactive => Conflict(BuildProblem(409, _localizer["Errors.TenantPlanInactive"], "Tenant.PlanInactive")),
+            TenantOperationOutcome.InstallationTenantCannotBeDeactivated => Conflict(BuildProblem(409, _localizer["Errors.TenantInstallationCannotBeDeactivated"], "Tenant.InstallationTenantCannotBeDeactivated")),
             _ => throw new InvalidOperationException("Unexpected outcome: " + outcome)
         };
     }
