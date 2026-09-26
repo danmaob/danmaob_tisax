@@ -17,5 +17,7 @@
   "Errors.PlanDefaultCannotBeDeactivated": "The default plan cannot be deactivated.",
   "Errors.PlanInvalidStateTransition": "The requested status change is not allowed for the current plan status.",
   "Errors.TenantPlanNotFound": "The requested plan does not exist.",
-  "Errors.TenantPlanInactive": "The requested plan is inactive and cannot be assigned."
+  "Errors.TenantPlanInactive": "The requested plan is inactive and cannot be assigned.",
+  "Errors.TenantModuleUnknownCode": "The requested module does not exist in the catalog.",
+  "Errors.TenantModuleInvalidState": "The exception state must be Enabled, Disabled or Inherit."
 }
