@@ -9,7 +9,7 @@ public class TenantModule : BaseEntity, ITenantOwned, IAuditable
 
     public string ModuleCode { get; private set; } = string.Empty;
 
-    public bool IsEnabled { get; private set; }
+    public bool? IsEnabled { get; private set; }
 
     protected TenantModule()
     {
@@ -45,5 +45,10 @@ public class TenantModule : BaseEntity, ITenantOwned, IAuditable
     public void Disable()
     {
         IsEnabled = false;
+    }
+
+    public void ClearException()
+    {
+        IsEnabled = null;
     }
 }
