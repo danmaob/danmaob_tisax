@@ -27,6 +27,8 @@ Consecuencia: un upgrade o downgrade surte efecto en la siguiente solicitud, y l
 
 Esto reemplaza la D2 de ADR-0009 ("sin fila, se deniega"): ahora, sin fila, decide el plan.
 
+**Actualización (Sprint 6):** ADR-0016 (US-20-5) precisa esta regla: una fila de `TenantModule` con `IsEnabled` en `null` significa "sin excepción" y decide el plan, igual que si no existiera la fila. Solo `true` o `false` son excepciones.
+
 ### D2 — Migración faltante como primera tarea del sprint
 
 La migración `AddTenantModules` se genera antes de cualquier tabla de planes, para que cada migración corresponda a una sola historia.
