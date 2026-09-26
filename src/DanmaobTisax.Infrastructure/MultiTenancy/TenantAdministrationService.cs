@@ -1,4 +1,5 @@
 using DanmaobTisax.Application.Auditing;
+using DanmaobTisax.Application.Interfaces;
 using DanmaobTisax.Application.Tenants;
 using DanmaobTisax.Domain.Exceptions;
 using DanmaobTisax.Domain.Tenants;
@@ -10,10 +11,12 @@ namespace DanmaobTisax.Infrastructure.MultiTenancy;
 public class TenantAdministrationService : ITenantAdministrationService
 {
     private readonly DanmaobTisaxDbContext _context;
+    private readonly ICurrentTenantProvider _currentTenantProvider;
 
-    public TenantAdministrationService(DanmaobTisaxDbContext context)
+    public TenantAdministrationService(DanmaobTisaxDbContext context, ICurrentTenantProvider currentTenantProvider)
     {
         _context = context;
+        _currentTenantProvider = currentTenantProvider;
     }
 
     public async Task<TenantOperationResult> CreateAsync(string name, CancellationToken cancellationToken)
@@ -99,6 +102,11 @@ public class TenantAdministrationService : ITenantAdministrationService
 
     public async Task<TenantOperationResult> DeactivateAsync(Guid tenantId, CancellationToken cancellationToken)
     {
+        if (_currentTenantProvider.Mode == MultiTenancyMode.SingleTenant && _currentTenantProvider.CurrentTenantId == tenantId)
+        {
+            return new TenantOperationResult(TenantOperationOutcome.InstallationTenantCannotBeDeactivated, null);
+        }
+
         return await ApplyTransitionAsync(tenantId, tenant => tenant.Deactivate(), cancellationToken);
     }
 

@@ -10,5 +10,7 @@ public enum TenantOperationOutcome
 	/// <summary>The referenced plan was not found.</summary>
 	PlanNotFound,
 	/// <summary>The referenced plan is inactive.</summary>
-	PlanInactive
+	PlanInactive,
+	/// <summary>The installation tenant cannot be deactivated.</summary>
+	InstallationTenantCannotBeDeactivated
 }

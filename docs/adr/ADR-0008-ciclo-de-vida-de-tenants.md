@@ -79,3 +79,5 @@ Por defecto MVC recorta el sufijo `Async` de los nombres de acción (`MvcOptions
 - Al dar de baja un tenant no se pierde ningún dato; su historial de auditoría permanece consultable.
 - **Verificado en código:** `AuditValueSerializer` serializa con opciones por defecto de `System.Text.Json`, así que `Status` aparece como número (1, 2, 3) en `OldValuesJson`/`NewValuesJson`. Los valores son estables por D2. Si resultara ilegible para auditores, la mejora corresponde al serializador (TS-00-4), no a esta historia.
 - Cambia el esquema: se elimina `IsActive`, nueva columna `Status`, nuevo índice único `IX_Tenant_Name`. Requiere una migración nueva.
+
+**Actualización (Sprint 6, US-20-13):** en On-Premise, el tenant de la instalación no se puede dar de baja; sí se puede suspender y reactivar. Ver ADR-0017.
