@@ -31,32 +31,28 @@ public partial class TenantModuleAdministrationService : ITenantModuleAdministra
 
         if (row is null)
         {
-            if ((state != TenantModuleExceptionStates.Inherit) is true)
+            if (state != TenantModuleExceptionStates.Inherit)
             {
                 _context.TenantModules.Add(new TenantModule(tenantId, moduleCode, state == TenantModuleExceptionStates.Enabled));
             }
-            return new TenantModuleOperationResult(TenantModuleOperationOutcome.Succeeded, null);
         }
-
+        else if (state == TenantModuleExceptionStates.Enabled)
+        {
+            row.Enable();
+        }
+        else if (state == TenantModuleExceptionStates.Disabled)
+        {
+            row.Disable();
+        }
         else
         {
-            if (state == TenantModuleExceptionStates.Enabled)
-            {
-                row.Enable();
-            }
-            else if (state == TenantModuleExceptionStates.Disabled)
-            {
-                row.Disable();
-            }
-            else
-            {
-                row.ClearException();
-            }
-            await _context.SaveChangesAsync(cancellationToken);
-
-            var modules = await GetModulesAsync(tenantId, cancellationToken);
-            var value = modules!.First(m => m.ModuleCode == moduleCode);
-            return new TenantModuleOperationResult(TenantModuleOperationOutcome.Succeeded, value);
+            row.ClearException();
         }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var modules = await GetModulesAsync(tenantId, cancellationToken);
+        var value = modules!.First(m => m.ModuleCode == moduleCode);
+        return new TenantModuleOperationResult(TenantModuleOperationOutcome.Succeeded, value);
     }
 }
