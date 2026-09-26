@@ -190,6 +190,12 @@ public class DanmaobTisaxDbContext : DbContext
             entity.HasIndex(e => new { e.TenantId, e.ModuleCode })
                 .IsUnique()
                 .HasDatabaseName("IX_TenantModule_TenantId_ModuleCode");
+
+            entity.HasOne<FunctionalModule>()
+                .WithMany()
+                .HasForeignKey(e => e.ModuleCode)
+                .HasPrincipalKey(m => m.Code)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<FunctionalModule>(entity =>
