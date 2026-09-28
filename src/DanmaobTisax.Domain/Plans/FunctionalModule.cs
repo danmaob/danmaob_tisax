@@ -4,9 +4,9 @@ namespace DanmaobTisax.Domain.Plans;
 
 public class FunctionalModule : BaseEntity
 {
-    public string Code { get; set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty;
 
-    public int SortOrder { get; set; }
+    public int SortOrder { get; private set; }
 
     protected FunctionalModule()
     {

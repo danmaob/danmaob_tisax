@@ -7,9 +7,9 @@ namespace DanmaobTisax.Domain.Plans;
 
 public class Plan : BaseEntity, IAuditable
 {
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public bool IsActive { get; set; } = true;
+    public string Code { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public bool IsActive { get; private set; } = true;
 
     protected Plan()
     {
