@@ -12,7 +12,7 @@ namespace DanmaobTisax.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/platform/tenants")]
 [RequirePermission("Platform.ManageTenants")]
-public class TenantsController : ControllerBase
+public partial class TenantsController : ControllerBase
 {
     private readonly ITenantAdministrationService _tenantAdministrationService;
     private readonly IStringLocalizer<TenantsController> _localizer;
