@@ -6,15 +6,15 @@ using DanmaobTisax.Domain.Common;
 public class User : BaseEntity, ITenantOwned, IAuditable
 {
     public Guid TenantId { get; set; }
-    public string Email { get; set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
     [AuditRedacted]
-    public string PasswordHash { get; set; } = string.Empty;
-    public string FullName { get; set; } = string.Empty;
-    public bool IsActive { get; set; } = true;
-    public int FailedLoginAttemptCount { get; set; } = 0;
-    public DateTime? LockoutEndUtc { get; set; } = null;
-    public DateTime? LastLoginAtUtc { get; set; } = null;
-    public DateTime PasswordChangedAtUtc { get; set; }
+    public string PasswordHash { get; private set; } = string.Empty;
+    public string FullName { get; private set; } = string.Empty;
+    public bool IsActive { get; private set; } = true;
+    public int FailedLoginAttemptCount { get; private set; } = 0;
+    public DateTime? LockoutEndUtc { get; private set; } = null;
+    public DateTime? LastLoginAtUtc { get; private set; } = null;
+    public DateTime PasswordChangedAtUtc { get; private set; }
 
     /// <summary>Required by EF Core for materialization.</summary>
     protected User()
@@ -31,6 +31,16 @@ public class User : BaseEntity, ITenantOwned, IAuditable
         if (string.IsNullOrWhiteSpace(fullName))
         {
             throw new ArgumentException("Full name is required.", nameof(fullName));
+        }
+
+        if (email.Length > 256)
+        {
+            throw new ArgumentException("Email must not exceed 256 characters.", nameof(email));
+        }
+
+        if (fullName.Length > 200)
+        {
+            throw new ArgumentException("Full name must not exceed 200 characters.", nameof(fullName));
         }
 
         TenantId = tenantId;
@@ -76,5 +86,33 @@ public class User : BaseEntity, ITenantOwned, IAuditable
     {
         PasswordHash = newPasswordHash;
         PasswordChangedAtUtc = DateTime.UtcNow;
+    }
+
+    /// <summary>Changes the user's full name.</summary>
+    public void Rename(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            throw new ArgumentException("Full name is required.", nameof(fullName));
+        }
+
+        if (fullName.Length > 200)
+        {
+            throw new ArgumentException("Full name must not exceed 200 characters.", nameof(fullName));
+        }
+
+        FullName = fullName;
+    }
+
+    /// <summary>Deactivates the user.</summary>
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
+
+    /// <summary>Reactivates the user.</summary>
+    public void Reactivate()
+    {
+        IsActive = true;
     }
 }
