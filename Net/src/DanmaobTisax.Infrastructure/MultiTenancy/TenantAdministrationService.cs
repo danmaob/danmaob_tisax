@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DanmaobTisax.Infrastructure.MultiTenancy;
 
-public class TenantAdministrationService : ITenantAdministrationService
+public partial class TenantAdministrationService : ITenantAdministrationService
 {
     private readonly DanmaobTisaxDbContext _context;
     private readonly ICurrentTenantProvider _currentTenantProvider;

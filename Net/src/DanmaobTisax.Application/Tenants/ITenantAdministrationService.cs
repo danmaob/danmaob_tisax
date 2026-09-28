@@ -1,4 +1,5 @@
 using DanmaobTisax.Application.Auditing;
+using DanmaobTisax.Application.Common;
 
 namespace DanmaobTisax.Application.Tenants;
 
@@ -42,4 +43,7 @@ public interface ITenantAdministrationService
 
     /// <summary>Assigns a different plan to the tenant. Existing tenant data is never deleted. Outcomes: Succeeded, NotFound, PlanNotFound, PlanInactive.</summary>
     Task<TenantOperationResult> ChangePlanAsync(Guid tenantId, Guid planId, CancellationToken cancellationToken = default);
+
+    /// <summary>Returns tenants ordered by Name then Id, optionally filtered by Status and by a case-insensitive Name fragment, paged (page size clamped to 1..200, page number at least 1).</summary>
+    Task<PagedResult<TenantDto>> ListAsync(TenantQueryFilter filter, CancellationToken cancellationToken);
 }
