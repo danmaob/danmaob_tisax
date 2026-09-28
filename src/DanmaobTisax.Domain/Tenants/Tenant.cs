@@ -7,9 +7,9 @@ using DanmaobTisax.Domain.Plans;
 
 public class Tenant : BaseEntity, IAuditable
 {
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
     public TenantStatus Status { get; private set; } = TenantStatus.Active;
-    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
     public Guid PlanId { get; private set; } = PlanCatalog.FreePlanId;
 
     /// <summary>Required by EF Core for materialization.</summary>
@@ -22,6 +22,11 @@ public class Tenant : BaseEntity, IAuditable
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Tenant name is required.", nameof(name));
+        }
+
+        if (name.Length > 200)
+        {
+            throw new ArgumentException("Tenant name must not exceed 200 characters.", nameof(name));
         }
 
         Name = name;
