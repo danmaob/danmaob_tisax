@@ -88,7 +88,8 @@ public class DanmaobTisaxDbContext : DbContext
             entity.Property(e => e.PasswordChangedAtUtc);
 
             entity.HasIndex(e => new { e.TenantId, e.Email })
-                .HasDatabaseName("IX_User_TenantId_Email");
+                .HasDatabaseName("IX_User_TenantId_Email")
+                .IsUnique();
         });
 
         modelBuilder.Entity<Role>(entity =>
