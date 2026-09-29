@@ -1,0 +1,19 @@
+{
+  "app": {
+    "name": "DANMAOB TISAX Compliance Manager",
+    "tagline": "TISAX compliance management"
+  },
+  "brand": {
+    "logoAlt": "DANMAOB logo"
+  },
+  "foundation": {
+    "ready": "The frontend foundation is ready."
+  },
+  "language": {
+    "label": "Language",
+    "option": {
+      "es": "ES",
+      "en": "EN"
+    }
+  }
+}
