@@ -43,6 +43,7 @@ public static class DependencyInjection
 
         services.AddScoped<IModuleAccessEvaluator, ModuleAccessEvaluator>();
         services.AddScoped<ITenantStatusEvaluator, TenantStatusEvaluator>();
+        services.AddScoped<IUserStatusEvaluator, UserStatusEvaluator>();
 
         services.AddScoped<ITenantAdministrationService, TenantAdministrationService>();
         services.AddScoped<ITenantModuleAdministrationService, TenantModuleAdministrationService>();

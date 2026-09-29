@@ -183,7 +183,7 @@ public class AuthenticationService : IAuthenticationService
         // Step 6: Load the corresponding User; if missing - InvalidRefreshToken.
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == refreshToken.UserId, cancellationToken);
-        if (user is null)
+        if (user is null || user.IsActive == false)
         {
             return new LoginResult
             {
