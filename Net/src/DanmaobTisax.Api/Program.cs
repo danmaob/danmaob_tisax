@@ -149,6 +149,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseMiddleware<TenantStatusMiddleware>();
+app.UseMiddleware<UserStatusMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
