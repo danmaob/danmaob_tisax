@@ -3,6 +3,7 @@ using DanmaobTisax.Application.Identity;
 using DanmaobTisax.Application.Interfaces;
 using DanmaobTisax.Application.Plans;
 using DanmaobTisax.Application.Tenants;
+using DanmaobTisax.Application.Users;
 using DanmaobTisax.Infrastructure.Auditing;
 using DanmaobTisax.Infrastructure.Identity;
 using DanmaobTisax.Infrastructure.MultiTenancy;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantAdministrationService, TenantAdministrationService>();
         services.AddScoped<ITenantModuleAdministrationService, TenantModuleAdministrationService>();
         services.AddScoped<IPlanAdministrationService, PlanAdministrationService>();
+        services.AddScoped<IUserAdministrationService, UserAdministrationService>();
 
         // Register authorization handler
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
