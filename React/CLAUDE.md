@@ -122,10 +122,12 @@ Node 26 (`.nvmrc`). Mantine 8 ya no recibe parches: la migración a Mantine 9 se
   - CSS propio solo en archivos `*.module.css`, cuando haga falta.
 - **TypeScript:** estricto (`strict`, `noUncheckedIndexedAccess`, `noUnusedLocals`, `noUnusedParameters`). Sin `any`.
 - **Pruebas:**
+  - `src/test/setup.ts` define un `localStorage` en memoria: con Node 26, el de jsdom no queda disponible (hallazgo de TS-00-10, prompt 04b). No lo quites.
   - Vitest con importaciones explícitas (`import { describe, it, expect } from 'vitest'`, sin globales);
   - Testing Library, con `renderWithProviders` de `src/test/renderWithProviders.tsx` para todo componente;
   - consultas por rol o texto visible.
 - **Sesión** (desde el paquete B): el token del Super Admin vive solo en memoria; nunca en `localStorage`, `sessionStorage` ni cookies. `localStorage` solo guarda preferencias no sensibles (idioma).
+- **Diseño aprobado del área de plataforma:** tema claro, fondo general `gray.0`, superficies blancas (`Paper withBorder`), primario `danmaob.6` en el título del encabezado, el botón principal y la navegación activa. El acento `danmaobAccent` solo se usa en resaltados puntuales.
 - **API:**
   - la dirección base se lee al arrancar desde `public/config.json` (`apiBaseUrl`);
   - en desarrollo, Vite reenvía `/api` a `http://localhost:5221`;
