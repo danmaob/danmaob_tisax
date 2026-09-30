@@ -38,8 +38,5 @@
       "title": "Panel de plataforma",
       "description": "Desde aquí administrarás tenants, planes y módulos."
     }
-  },
-  "foundation": {
-    "ready": "La base del frontend está lista."
   }
 }

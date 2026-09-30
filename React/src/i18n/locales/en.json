@@ -38,8 +38,5 @@
       "title": "Platform panel",
       "description": "From here you will manage tenants, plans and modules."
     }
-  },
-  "foundation": {
-    "ready": "The frontend foundation is ready."
   }
 }
