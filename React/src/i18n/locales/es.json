@@ -1,13 +1,11 @@
 {
   "app": {
     "name": "DANMAOB TISAX Compliance Manager",
-    "tagline": "Gestión de cumplimiento TISAX"
+    "tagline": "Gestión de cumplimiento TISAX",
+    "configError": "No se pudo cargar la configuración de la aplicación (config.json)."
   },
   "brand": {
     "logoAlt": "Logotipo de DANMAOB"
-  },
-  "foundation": {
-    "ready": "La base del frontend está lista."
   },
   "language": {
     "label": "Idioma",
@@ -15,5 +13,33 @@
       "es": "ES",
       "en": "EN"
     }
+  },
+  "login": {
+    "title": "Acceso de plataforma",
+    "subtitle": "Solo para Super Administradores.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "sessionExpired": "Tu sesión expiró. Inicia sesión de nuevo.",
+    "errors": {
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "invalidInput": "Revisa el correo y la contraseña.",
+      "unavailable": "No se pudo conectar con el servidor. Intenta de nuevo."
+    }
+  },
+  "platform": {
+    "title": "Plataforma",
+    "menu": "Abrir menú",
+    "logout": "Cerrar sesión",
+    "nav": {
+      "home": "Inicio"
+    },
+    "home": {
+      "title": "Panel de plataforma",
+      "description": "Desde aquí administrarás tenants, planes y módulos."
+    }
+  },
+  "foundation": {
+    "ready": "La base del frontend está lista."
   }
 }
