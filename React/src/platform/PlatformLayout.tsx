@@ -40,6 +40,7 @@ export function PlatformLayout() {
       </AppShell.Header>
       <AppShell.Navbar p="md">
         <NavLink component={Link} to="/platform" label={t('platform.nav.home')} active={location.pathname === '/platform'} onClick={close} />
+        <NavLink component={Link} to="/platform/tenants" label={t('platform.nav.tenants')} active={location.pathname.startsWith('/platform/tenants')} onClick={close} />
         <Stack gap="sm" mt="xl" hiddenFrom="sm">
           <Text size="sm" c="dimmed">{session?.email}</Text>
           <LanguageSwitcher />

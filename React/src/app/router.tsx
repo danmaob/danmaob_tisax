@@ -3,6 +3,7 @@ import { PlatformHomePage } from '../platform/PlatformHomePage';
 import { PlatformLayout } from '../platform/PlatformLayout';
 import { PlatformLoginPage } from '../platform/PlatformLoginPage';
 import { RequirePlatformSession } from '../platform/RequirePlatformSession';
+import { TenantsPage } from '../platform/tenants/TenantsPage';
 
 export const router = createBrowserRouter([
   {
@@ -20,10 +21,14 @@ export const router = createBrowserRouter([
       {
         element: <PlatformLayout />,
         children: [
-          {
-            index: true,
-            element: <PlatformHomePage />,
-          },
+           {
+             index: true,
+             element: <PlatformHomePage />,
+           },
+           {
+             path: 'tenants',
+             element: <TenantsPage />,
+           },
         ],
       },
     ],

@@ -38,4 +38,26 @@ describe('PlatformLayout', () => {
     expect(await screen.findByText('login-page')).toBeInTheDocument();
     expect(getSession()).toBeNull();
   });
+
+  it('opens the tenants page from the side menu', async () => {
+    startSession(token, 'admin@example.com');
+
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/platform']}>
+        <Routes>
+          <Route path="/platform" element={<PlatformLayout />}>
+            <Route index element={<div>platform-content</div>} />
+            <Route path="tenants" element={<div>tenants-content</div>} />
+          </Route>
+          <Route path="/platform/login" element={<div>login-page</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole('link', { name: 'Tenants' }));
+
+    expect(await screen.findByText('tenants-content')).toBeInTheDocument();
+  });
 });

@@ -32,11 +32,19 @@
     "menu": "Open menu",
     "logout": "Sign out",
     "nav": {
-      "home": "Home"
+      "home": "Home",
+      "tenants": "Tenants"
     },
     "home": {
       "title": "Platform panel",
       "description": "From here you will manage tenants, plans and modules."
+    }
+  },
+  "tenants": {
+    "title": "Tenants",
+    "description": "Client organizations on the platform and their plan.",
+    "actions": {
+      "create": "New tenant"
     }
   },
   "errors": {
