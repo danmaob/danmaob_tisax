@@ -127,7 +127,16 @@ Node 26 (`.nvmrc`). Mantine 8 ya no recibe parches: la migración a Mantine 9 se
   - Testing Library, con `renderWithProviders` de `src/test/renderWithProviders.tsx` para todo componente;
   - consultas por rol o texto visible.
 - **Sesión** (desde el paquete B): el token del Super Admin vive solo en memoria; nunca en `localStorage`, `sessionStorage` ni cookies. `localStorage` solo guarda preferencias no sensibles (idioma).
-- **Diseño aprobado del área de plataforma:** tema claro, fondo general `gray.0`, superficies blancas (`Paper withBorder`), primario `danmaob.6` en el título del encabezado, el botón principal y la navegación activa. El acento `danmaobAccent` solo se usa en resaltados puntuales.
+- **Diseño aprobado del área de plataforma:** tema claro, fondo general `gray.0`, superficies blancas (`Paper withBorder`), primario `danmaob.6` en el botón principal y la navegación activa. Todos los títulos (h1 a h6) van en `danmaob.6` desde el tema (`Title.extend` en `theme.ts`): ningún componente les pone color. El acento `danmaobAccent` solo se usa en resaltados puntuales. Estados con insignias de las paletas de Mantine: `green` (activo), `orange` (suspendido), `gray` (dado de baja).
+- **Tamaños de pantalla y puntos de quiebre de Mantine:**
+
+  | Tamaño | Ancho | Clave de Mantine en props responsivas |
+  |---|---|---|
+  | Móvil | menos de 48em (iPhone SE: 375 px) | `base` |
+  | Tablet | de 48em a menos de 62em | `sm` |
+  | Escritorio | 62em o más | `md` |
+
+  `hiddenFrom="sm"` oculta desde tablet; `visibleFrom="sm"` muestra desde tablet.
 - **API:**
   - la dirección base se lee al arrancar desde `public/config.json` (`apiBaseUrl`);
   - en desarrollo, Vite reenvía `/api` a `http://localhost:5221`;
@@ -153,6 +162,11 @@ Heredan las reglas 1-20 de `Net/CLAUDE.md` con estas adaptaciones:
    - no reescribir archivos completos existentes;
    - sangría de 2 espacios en TS/TSX/JSON/CSS, nunca tabuladores;
    - comillas simples en TS/TSX, con punto y coma.
+8. **Contrato responsivo por pantalla.** Todo prompt que cree o cambie interfaz incluye una tabla con tres columnas: móvil (`base`, menos de 48em, revisado a 375 px), tablet (`sm`, 48 a 62em) y escritorio (`md`, 62em o más). Para cada región dice qué se ve, qué se oculta, a dónde se mueve cada control, qué texto no puede partirse en dos líneas y el ancho máximo. Claude lo revisa contra 375 px antes de entregar el paquete.
+9. **Componentes pequeños.** Cada pantalla se divide en componentes de uno o dos niveles de JSX como máximo, uno por paso del prompt. Nunca se describe en prosa un árbol profundo de JSX.
+10. **Estructuras como tablas planas.** Rutas, columnas, campos de formulario, acciones y props van en tablas con una fila por elemento: nombre, propiedades y orden.
+11. **Archivos intocables.** Cada prompt nombra como prohibidos `eslint.config.js`, `tsconfig.json`, `vite.config.ts`, `package.json`, `package-lock.json`, `postcss.config.cjs` y `src/test/setup.ts`. Ningún error de lint, prueba o compilación se corrige tocándolos. La orden de detenerse se repite al final de la sección de verificación.
+12. **Revisión visual en tres anchos.** Después de cada prompt de interfaz, el README del paquete dice qué debe ver Luis en Chrome a 375, 768 y 1280 px.
 
 ## 5. Entorno de Luis para frontend
 
