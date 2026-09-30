@@ -30,10 +30,10 @@ describe('PlatformLayout', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+    expect(screen.getAllByText('admin@example.com')).toHaveLength(2);
     expect(screen.getByText('platform-content')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+    await user.click(screen.getAllByRole('button', { name: 'Cerrar sesión' })[0] as HTMLElement);
 
     expect(await screen.findByText('login-page')).toBeInTheDocument();
     expect(getSession()).toBeNull();
