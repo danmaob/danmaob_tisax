@@ -38,5 +38,8 @@
       "title": "Panel de plataforma",
       "description": "Desde aquí administrarás tenants, planes y módulos."
     }
+  },
+  "errors": {
+    "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   }
 }
