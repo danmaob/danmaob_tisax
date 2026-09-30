@@ -1,4 +1,4 @@
-import { createTheme } from '@mantine/core';
+import { createTheme, Title } from '@mantine/core';
 
 import { accentPalette, fontFamily, headingFontWeight, primaryPalette } from './tokens';
 
@@ -13,5 +13,12 @@ export const danmaobTheme = createTheme({
   headings: {
     fontFamily,
     fontWeight: headingFontWeight,
+  },
+  components: {
+    Title: Title.extend({
+      defaultProps: {
+        c: 'danmaob.6',
+      },
+    }),
   },
 });

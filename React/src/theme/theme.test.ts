@@ -14,4 +14,8 @@ describe('danmaobTheme', () => {
     expect(primaryPalette[6]).toBe(brandColors.primary);
     expect(accentPalette[2]).toBe(brandColors.accent);
   });
+
+  it('paints every title with the brand primary color', () => {
+    expect(danmaobTheme.components?.Title?.defaultProps).toEqual({ c: 'danmaob.6' });
+  });
 });
